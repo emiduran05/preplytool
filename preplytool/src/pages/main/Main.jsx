@@ -7,19 +7,16 @@ export default function Main() {
     const [alumnos, setAlumnos] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    function obtenerAlumnos() {
-        setTimeout(() => {
-            const data = [
-                { id: 1, nombre: "Emiliano Durán", progreso: 50, ultima_sesion: "04/11/2025" },
-                { id: 2, nombre: "Fernando Durán", progreso: 20, ultima_sesion: "02/11/2025" },
-                { id: 3, nombre: "Ivana Banderas", progreso: 24, ultima_sesion: "02/11/2025" },
-                { id: 4, nombre: "Viviana Fuentes", progreso: 75, ultima_sesion: "02/11/2025" },
-                { id: 5, nombre: "Iván Durán", progreso: 70, ultima_sesion: "02/11/2025" },
-            ];
+    async function obtenerAlumnos() {
 
+        await fetch("http://127.0.0.1:3000/api/alumnos", {
+            method: "GET",
+        })
+        .then(res => res.json())
+        .then(data => {
             setAlumnos(data);
             setLoading(false);
-        }, 2000);
+        })
     }
 
     useEffect(() => {
