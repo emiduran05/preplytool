@@ -1,0 +1,91 @@
+.site_main {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    background-color: var(--background);
+    min-height: 100vh;
+    h1 {
+        font-size: 18px;
+    }
+}
+
+.site_main_container {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.site_main_container_card {
+    position: relative;
+    background-color: var(--blanco);
+    font-size: 14px;
+    padding: 20px;
+    min-width: 250px;
+    border-radius: 5px;
+    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.75);
+    -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.75);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    p:nth-child(0){
+        font-weight: 600;
+    }
+
+    button{
+        width: 100%;
+        padding: 5px;
+        background-color: var(--naranja);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.75);
+        -webkit-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.75);
+        -moz-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.75);
+        
+    }
+}
+
+
+.progress_bar{
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid #999;
+    
+}
+
+.add{
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px;
+    background-color: #fff;
+    cursor: pointer;
+    border: none;
+    border: 1px solid #000;
+}
+
+.delete{
+    color: #f00;
+    font-size: 16px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+}
+
+.edit{
+    color: #00f;
+    font-size: 16px;
+    position: absolute;
+    top: 10px;
+    right: 30px;
+    cursor: pointer;
+}

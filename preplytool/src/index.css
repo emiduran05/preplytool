@@ -1,0 +1,17 @@
+:root{
+    --background: #F5F7FA;
+    --naranja: #F59E0B;
+    --verde: #10B981;
+    --blanco: #fff;
+
+}
+
+*{
+    box-sizing: border-box;
+    margin: 0;
+    font-family: inter;
+}
+
+a{
+    text-decoration: none;
+}
