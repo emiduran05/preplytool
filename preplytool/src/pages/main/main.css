@@ -1,91 +1,166 @@
-.site_main {
-    padding: 20px;
+.main {
+    padding: 40px 20px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
     align-items: center;
     background-color: var(--background);
     min-height: 100vh;
-    h1 {
-        font-size: 18px;
-    }
 }
 
-.site_main_container {
+.main h1 {
+    font-size: 1.6rem;
+    color: var(--texto-principal);
+    margin-bottom: 5px;
+}
+
+.main__subtitle {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.loader {
+    display: flex;
+    justify-content: center;
+    margin-top: 60px;
+}
+
+/* Contenedor de alumnos */
+.alumnos {
     width: 100%;
+    max-width: 1100px;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-    gap: 20px;
+    gap: 24px;
 }
 
-.site_main_container_card {
+/* Tarjeta de alumno */
+.alumno {
     position: relative;
     background-color: var(--blanco);
-    font-size: 14px;
     padding: 20px;
-    min-width: 250px;
     border-radius: 5px;
-    box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.75);
-    -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.75);
-    -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    min-width: 260px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    p:nth-child(0){
-        font-weight: 600;
-    }
-
-    button{
-        width: 100%;
-        padding: 5px;
-        background-color: var(--naranja);
-        color: #fff;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        border-radius: 5px;
-        box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.75);
-        -webkit-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.75);
-        -moz-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.75);
-        
-    }
+    gap: 14px;
 }
 
-
-.progress_bar{
-    width: 100%;
-    border-radius: 5px;
-    border: 1px solid #999;
-    
+.alumno:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.add{
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 10px;
-    background-color: #fff;
-    cursor: pointer;
-    border: none;
-    border: 1px solid #000;
-}
-
-.delete{
-    color: #f00;
-    font-size: 16px;
+.alumno__icons {
     position: absolute;
     top: 10px;
     right: 10px;
-    cursor: pointer;
+    display: flex;
+    gap: 10px;
 }
 
-.edit{
-    color: #00f;
-    font-size: 16px;
-    position: absolute;
-    top: 10px;
-    right: 30px;
+.edit, .delete {
     cursor: pointer;
+    font-size: 16px;
+    transition: transform 0.2s;
+}
+
+.edit {
+    color: #007bff;
+}
+.delete {
+    color: #f44336;
+}
+
+.edit:hover, .delete:hover {
+    transform: scale(1.4);
+}
+
+/* Contenido interno */
+.alumno__nombre {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--texto-principal);
+}
+
+.alumno__progreso label {
+    font-size: 14px;
+    color: #333;
+}
+
+.progress {
+    width: 100%;
+    height: 14px;
+    border-radius: 5px;
+    border: 1px solid #bbb;
+    background-color: #f0f0f0;
+    overflow: hidden;
+}
+
+.progress__fill {
+    height: 100%;
+    background-color: var(--verde);
+    border-radius: 5px 0 0 5px;
+    transition: width 0.5s ease;
+}
+
+.alumno__fecha {
+    font-size: 13px;
+    color: #555;
+}
+
+.alumno__fecha span {
+    font-weight: 600;
+}
+
+.alumno__btn {
+    width: 100%;
+    padding: 8px;
+    background-color: var(--naranja);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.alumno__btn:hover {
+    background-color: #e07b00;
+}
+
+/* Botón flotante */
+.add {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background-color: var(--naranja);
+    color: #fff;
+    border: none;
+    padding: 12px 18px;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.add:hover {
+    background-color: #e07b00;
+    transform: scale(1.05);
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .alumno {
+        width: 90%;
+    }
+
+    .add {
+        right: 15px;
+        bottom: 15px;
+        padding: 10px 16px;
+    }
 }
