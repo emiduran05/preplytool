@@ -6,8 +6,8 @@ export default function Header(){
         <>
             <header className="site_header">
                 <div className="site_header_container">
-                    <a href="">Tablero</a>
-                    <p>Mi aula virtual</p>
+                    <a href="/dashboard">Tablero</a>
+                    <a href="/">Mi aula virtual</a>
                     <a href="">Herramientas</a>
                 </div>
             </header>

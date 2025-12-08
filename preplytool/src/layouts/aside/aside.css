@@ -1,0 +1,99 @@
+.aside_container {
+  min-width: 260px;
+  background: #fafafa;
+  padding: 15px;
+  font-family: sans-serif;
+  width: 100%;
+ 
+}
+
+.item {
+  margin-bottom: 10px;
+}
+
+.collapse_btn {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 8px 5px;
+  text-align: left;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  div{
+    display: flex;
+    gap: 10px;
+  }
+}
+
+.collapse_btn:hover {
+  background: #eee;
+}
+
+.arrow {
+  display: inline-block;
+  transition: transform 0.25s ease;
+}
+
+.arrow.open {
+  transform: rotate(90deg);
+}
+
+/* identación */
+.stage_block {
+  margin-left: 15px;
+}
+
+.stage_btn {
+  font-size: 15px;
+}
+
+.lesson_block {
+  margin-left: 30px;
+  padding-left: 5px;
+  border-left: 2px solid #ddd;
+}
+
+.lesson_row{
+  margin-bottom: 5px;
+}
+
+.lesson_block a {
+  margin: 4px 0;
+  margin-bottom: 4px;
+  text-decoration: none;
+  color: #000;
+  padding: 4px 0;
+  cursor: pointer;
+  padding: 5px;
+
+}
+
+.lesson_block a:hover {
+  background: #eee;
+}
+
+
+.add_btn, .add_btn_global{
+    margin-bottom: 10px;
+    background-color: #1807ab;
+    color: #fff;
+    cursor: pointer;
+    padding: 7px;
+    border-radius: 5px;
+    border: none;
+}
+
+
+.add_btn:hover, .add_btn_global:hover{
+  background-color: #062d5e;
+  transition: 0.2s
+}
+
+.display{
+  background-color: transparent;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+}

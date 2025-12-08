@@ -1,4 +1,4 @@
-.main {
+.main_main {
     padding: 40px 20px;
     display: flex;
     flex-direction: column;
@@ -85,7 +85,13 @@
     color: var(--texto-principal);
 }
 
-.alumno__progreso label {
+.alumno__progreso{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.alumno__progreso span{
     font-size: 14px;
     color: #333;
 }
@@ -152,6 +158,94 @@
     transform: scale(1.05);
 }
 
+
+.addAlumno, .deleteAlumno, .editAlumno{
+    background-color: #fff;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 20%;
+    bottom: 20%;
+    right: 30%;
+    height: 40%;
+    justify-content: center;
+    z-index: 6;
+    width: 40%;
+    padding: 10px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    #confirmDelete{
+        width: 50%;
+        padding: 5px;
+        background-color: #b22;
+        color: #fff;
+        cursor: pointer;
+    }
+    p{
+        text-align: center;
+    }
+    form{
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        label,input,button{
+            font-size: 14px;
+            width: 80%;
+        }
+
+        input,button{
+            padding: 5px;
+        }
+
+        input{
+            border: 2px solid var(--verde);
+            outline: none;
+        }
+
+        button{
+            background-color: var(--background);
+            border: 1px solid #444;
+            cursor: pointer;
+        }
+    }
+}
+
+.crossmark{
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    i{
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+    }
+}
+
+.addAlumnoVisible{
+    display: flex;
+}
+
+.black_screen{
+    position: fixed;
+    inset: 0;
+    background-color: #000;
+    opacity: 0.6;
+    display: none;
+}
+
+.screen_visible{
+    display: block;
+}
+
 /* Responsivo */
 @media (max-width: 600px) {
     .alumno {
@@ -164,3 +258,5 @@
         padding: 10px 16px;
     }
 }
+
+
