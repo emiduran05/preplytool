@@ -10,11 +10,13 @@ export const getNivelesCompletosService = async () => {
         FROM niveles n
         LEFT JOIN etapas e ON e.nivel_id = n.id
         LEFT JOIN lecciones l ON l.etapa_id = e.id
-        ORDER BY n.id, e.id, l.id;
+        ORDER BY 
+            LOWER(n.nombre) ASC,
+            LOWER(e.nombre) ASC,
+            LOWER(l.nombre) ASC;
     `);
 
     const rows = result.rows;
-
     const nivelesMap = {};
 
     rows.forEach(row => {
@@ -46,5 +48,16 @@ export const getNivelesCompletosService = async () => {
         }
     });
 
-    return Object.values(nivelesMap);
+    // 🔥 Ordenar dentro del JSON final
+    const nivelesOrdenados = Object.values(nivelesMap)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    nivelesOrdenados.forEach(nivel => {
+        nivel.stages.sort((a, b) => a.name.localeCompare(b.name));
+        nivel.stages.forEach(etapa => {
+            etapa.lessons.sort((a, b) => a.name.localeCompare(b.name));
+        });
+    });
+
+    return nivelesOrdenados;
 };
