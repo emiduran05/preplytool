@@ -1,0 +1,38 @@
+.ql-editor {
+  font-size: 16px;
+  font-family: inter;
+}
+
+.ql-video{
+    width: 50%;
+    aspect-ratio: 2 / 1;
+}
+
+.student-input {
+  padding: 6px;
+  margin: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  min-width: 120px;
+}
+
+.ejercicios-estudiante {
+  line-height: 2;
+}
+
+.vocab-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.vocab-table th,
+.vocab-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.vocab-table th {
+  background-color: #f5f5f5;
+}

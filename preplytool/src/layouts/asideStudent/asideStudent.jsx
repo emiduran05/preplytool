@@ -1,7 +1,7 @@
-import "./aside.css";
+import "./asideStudent.css";
 import { useState, useEffect } from "react";
 
-export default function Aside({ onSelect }) {
+export default function AsideStudent({ onSelect }) {
     const [isloading, setIsloading] = useState(true);
     const [levelsData, setLevelsData] = useState([]);
     const [openLevel, setOpenLevel] = useState(null);
@@ -140,16 +140,7 @@ export default function Aside({ onSelect }) {
     return (
         <div className="aside_container">
 
-            {/* BOTÓN AGREGAR NIVEL */}
-            {!isloading && openLevel === null && (
-                <button
-                    className="add_btn_global"
-                    onClick={() => openModal("nivel")}
-                >
-                    + Agregar Nivel
-                </button>
-            )}
-
+           
             {levelsData.map((level) => (
                 <div key={level.id} className="item">
                     <div className="row">
@@ -167,17 +158,7 @@ export default function Aside({ onSelect }) {
 
                             {level.name}
 
-                            <div>
-                                <i
-                                    className="fa-solid fa-pencil edit"
-                                    onClick={() => openEditModal("nivel", level)}
-                                ></i>
-
-                                <i
-                                    className="fa-solid fa-trash delete"
-                                    onClick={() => openDeleteModal("nivel", level)}
-                                ></i>
-                            </div>
+                           
                         </div>
                     </div>
 
@@ -202,17 +183,7 @@ export default function Aside({ onSelect }) {
 
                                             {stage.name}
 
-                                            <div>
-                                                <i
-                                                    className="fa-solid fa-pencil edit"
-                                                    onClick={() => openEditModal("etapa", stage)}
-                                                ></i>
-
-                                                <i
-                                                    className="fa-solid fa-trash delete"
-                                                    onClick={() => openDeleteModal("etapa", stage)}
-                                                ></i>
-                                            </div>
+                                           
                                         </div>
                                     </div>
 
@@ -229,23 +200,13 @@ export default function Aside({ onSelect }) {
                                                 </div>
                                             ))}
 
-                                            <button
-                                                className="add_btn"
-                                                onClick={() => openModal("leccion", stage.id)}
-                                            >
-                                                + Agregar Lección
-                                            </button>
+                                            
                                         </div>
                                     )}
                                 </div>
                             ))}
 
-                            <button
-                                className="add_btn"
-                                onClick={() => openModal("etapa", level.id)}
-                            >
-                                + Agregar Etapa
-                            </button>
+                            
                         </div>
                     )}
                 </div>

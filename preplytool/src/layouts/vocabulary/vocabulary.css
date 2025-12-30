@@ -1,0 +1,16 @@
+.vocabulary_words{
+    background-color: #4048b5;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    min-width: 100px;
+}
+
+.general_voc{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
