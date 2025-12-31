@@ -16,27 +16,90 @@ function renderEjerciciosConInputs(delta) {
   let html = converter.convert();
 
   let index = 0;
-  html = html.replace(/\{([^}]+)\}/g, (_, answer) => `
-    <input
-      type="text"
-      class="student-input"
-      data-answer="${answer}"
-      id="input-${index++}"
-      placeholder="Respuesta"
-    />
-  `);
+
+  html = html.replace(/\{([^}]+)\}/g, (_, respuesta) => {
+    return `
+      <span class="input-wrapper">
+        <input
+          type="text"
+          class="student-input"
+          data-answer="${respuesta.trim().toLowerCase()}"
+          placeholder="Respuesta"
+          id="input-${index++}"
+        />
+      </span>
+    `;
+  });
 
   return html;
 }
 
 export default function DashboardStudent() {
   const [leccionId, setLeccionId] = useState(null);
-
   const [tituloClase, setTituloClase] = useState("");
   const [lecturaDelta, setLecturaDelta] = useState(null);
   const [ejerciciosHTML, setEjerciciosHTML] = useState("");
   const [pdfUrl, setPdfUrl] = useState(null);
   const [vocabulario, setVocabulario] = useState([]);
+
+  const [definiciones, setDefiniciones] = useState({});
+  const [ejemplos, setEjemplos] = useState({});
+
+  /* ================================
+     API - DEFINICIONES
+  ================================ */
+  const obtenerDefinicion = async (palabra) => {
+    try {
+      const res = await fetch(
+        `https://corsproxy.io/?https://rae-api.com/api/words/${palabra}`
+      );
+      const data = await res.json();
+      return data?.data?.meanings?.[0]?.senses?.[0]?.description || "Sin definición";
+    } catch {
+      return "Error al obtener definición";
+    }
+  };
+
+  const obtenerEjemplo = async (palabra) => {
+    try {
+      const res = await fetch(
+        `https://corsproxy.io/?https://tatoeba.org/es/api_v0/search?query=${palabra}&from=spa&to=eng`
+      );
+      const data = await res.json();
+
+      const ejemplo = data?.results?.[0];
+      if (!ejemplo) return "Sin ejemplo disponible";
+
+      const traduccion = ejemplo.translations?.[0]?.[0]?.text || "";
+      return `${ejemplo.text}${traduccion ? " — " + traduccion : ""}`;
+    } catch {
+      return "Error al obtener ejemplo";
+    }
+  };
+
+  /* ================================
+     CARGAR VOCABULARIO
+  ================================ */
+  useEffect(() => {
+    if (vocabulario.length === 0) return;
+
+    const cargarDatos = async () => {
+      const defs = {};
+      const ejems = {};
+
+      await Promise.all(
+        vocabulario.map(async (item) => {
+          defs[item.palabra] = await obtenerDefinicion(item.palabra);
+          ejems[item.palabra] = await obtenerEjemplo(item.palabra);
+        })
+      );
+
+      setDefiniciones(defs);
+      setEjemplos(ejems);
+    };
+
+    cargarDatos();
+  }, [vocabulario]);
 
   /* ================================
      CARGAR LECCIÓN
@@ -44,7 +107,6 @@ export default function DashboardStudent() {
   useEffect(() => {
     if (!leccionId) return;
 
-    // 🔹 LIMPIAR CONTENIDO AL CAMBIAR DE LECCIÓN
     setTituloClase("");
     setLecturaDelta(null);
     setEjerciciosHTML("");
@@ -52,43 +114,33 @@ export default function DashboardStudent() {
     setVocabulario([]);
 
     const fetchLeccion = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:3000/api/services/leccion/${leccionId}`
+      const res = await fetch(
+        `http://localhost:3000/api/services/leccion/${leccionId}`
+      );
+      if (!res.ok) return;
+
+      const data = await res.json();
+
+      setTituloClase(data.titulo_clase || "");
+      setLecturaDelta(data.contenido_leccion || null);
+
+      if (data.ejercicios_leccion) {
+        setEjerciciosHTML(
+          renderEjerciciosConInputs(data.ejercicios_leccion)
         );
-
-        if (!res.ok) return;
-
-        const data = await res.json();
-
-        setTituloClase(data.titulo_clase || "");
-        setLecturaDelta(data.contenido_leccion || null);
-
-        if (data.ejercicios_leccion) {
-          setEjerciciosHTML(
-            renderEjerciciosConInputs(data.ejercicios_leccion)
-          );
-        }
-
-        setPdfUrl(data.ruta_pdf || null);
-      } catch (error) {
-        console.error("Error cargando lección:", error);
       }
+
+      setPdfUrl(data.ruta_pdf || null);
     };
 
     const fetchVocabulario = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:3000/api/vocabulario/${leccionId}`
-        );
+      const res = await fetch(
+        `http://localhost:3000/api/vocabulario/${leccionId}`
+      );
+      if (!res.ok) return;
 
-        if (!res.ok) return;
-
-        const data = await res.json();
-        setVocabulario(data || []);
-      } catch (error) {
-        console.error("Error cargando vocabulario:", error);
-      }
+      const data = await res.json();
+      setVocabulario(data || []);
     };
 
     fetchLeccion();
@@ -96,13 +148,11 @@ export default function DashboardStudent() {
   }, [leccionId]);
 
   /* ================================
-     CORREGIR RESPUESTAS
+     REVISAR RESPUESTAS
   ================================ */
   const revisarRespuestas = () => {
-    const inputs = document.querySelectorAll(".student-input");
-
-    inputs.forEach((input) => {
-      const correcta = input.dataset.answer.trim().toLowerCase();
+    document.querySelectorAll(".student-input").forEach((input) => {
+      const correcta = input.dataset.answer?.trim().toLowerCase();
       const usuario = input.value.trim().toLowerCase();
 
       if (usuario === correcta) {
@@ -134,84 +184,39 @@ export default function DashboardStudent() {
             <>
               <h2 style={{ textAlign: "center" }}>{tituloClase}</h2>
 
-              {/* ================= LECTURA ================= */}
-
-              {lecturaDelta ? (
+              {lecturaDelta && (
                 <ReactQuill value={lecturaDelta} readOnly theme="bubble" />
-              ) : (
-                <p style={{ opacity: 0.6, textAlign: "center" }}>Esta lección no tiene lectura.</p>
               )}
 
-              {/* ================= PDF ================= */}
-{pdfUrl && (
-  <>
-    <h3 style={{ marginTop: "30px", textAlign: "center" }}>
-      Documento de apoyo
-    </h3>
+              {pdfUrl && (
+                <>
+                  <h3 style={{ marginTop: 30 }}>Documento de apoyo</h3>
+                  <iframe
+                    src={pdfUrl}
+                    width="100%"
+                    height="450px"
+                    style={{ border: "1px solid #ccc", borderRadius: "8px" }}
+                  />
 
-    <iframe
-      src={pdfUrl}
-      width="100%"
-      height="450px"
-      style={{
-        border: "1px solid #ccc",
-        borderRadius: "8px"
-      }}
-    />
+                  <a target="_blank" rel="noreferrer" href={pdfUrl}>
+                    Ver documento completo
+                  </a>
+                </>
+              )}
 
-    <div style={{ textAlign: "center", marginTop: "12px" }}>
-      <a
-        href={pdfUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          display: "inline-block",
-          padding: "10px 20px",
-          background: "#1976d2",
-          color: "white",
-          borderRadius: "6px",
-          textDecoration: "none",
-          fontWeight: "500"
-        }}
-      >
-        Ver en pantalla completa
-      </a>
-    </div>
-  </>
-)}
-
-
-              {/* ================= EJERCICIOS ================= */}
-
-              {ejerciciosHTML ? (
+              {ejerciciosHTML && (
                 <>
                   <div
                     className="ejercicios-estudiante"
                     dangerouslySetInnerHTML={{ __html: ejerciciosHTML }}
                   />
 
-                  <button
-                    onClick={revisarRespuestas}
-                    style={{
-                      marginTop: "15px",
-                      padding: "10px 20px",
-                      background: "#1976d2",
-                      border: "none",
-                      color: "white",
-                      borderRadius: "5px",
-                      cursor: "pointer"
-                    }}
-                  >
+                  <button className="check" onClick={revisarRespuestas}>
                     Revisar respuestas
                   </button>
                 </>
-              ) : (
-                <p style={{ opacity: 0.6, textAlign: "center" }}>
-                  Esta lección no tiene ejercicios.
-                </p>
               )}
 
-              {/* ================= VOCABULARIO ================= */}
               {vocabulario.length > 0 && (
                 <>
                   <h3 style={{ marginTop: "30px" }}>Vocabulario</h3>
@@ -220,7 +225,7 @@ export default function DashboardStudent() {
                     <thead>
                       <tr>
                         <th>Palabra</th>
-                        <th>Traducción</th>
+                        <th>Definición</th>
                         <th>Ejemplo</th>
                       </tr>
                     </thead>
@@ -228,16 +233,14 @@ export default function DashboardStudent() {
                       {vocabulario.map((item, index) => (
                         <tr key={index}>
                           <td>{item.palabra}</td>
-                          <td>{item.traduccion}</td>
-                          <td>{item.ejemplo}</td>
+                          <td>{definiciones[item.palabra] || "Cargando..."}</td>
+                          <td>{ejemplos[item.palabra] || "Cargando..."}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </>
               )}
-
-              
             </>
           )}
         </div>

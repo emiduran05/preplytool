@@ -1,0 +1,23 @@
+/* Quitar bordes cuando se active la clase */
+.ql-editor table.no-borders,
+.ql-editor table.no-borders td,
+.ql-editor table.no-borders th {
+  border: none !important;
+}
+
+/* Flex-between */
+.ql-editor .flex-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.no-borders table,
+.no-borders td,
+.no-borders th {
+  border: none !important;
+}
+
+[data-width] table {
+  width: 100%;
+  border-collapse: collapse;
+}

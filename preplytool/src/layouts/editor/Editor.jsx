@@ -1,31 +1,142 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 
-import ImageResize from "quill-image-resize-module-react";
 import Quill from "quill";
+import ImageResize from "quill-image-resize-module-react";
+import QuillBetterTable from "quill-better-table";
 
-Quill.register("modules/imageResize", ImageResize);
+// =====================
+// REGISTROS
+// =====================
+Quill.register(
+  {
+    "modules/imageResize": ImageResize,
+    "modules/better-table": QuillBetterTable
+  },
+  true
+);
 
 export default function QuillEditor({ value, onSave }) {
   const quillRef = useRef(null);
   const [internalValue, setInternalValue] = useState(value || "");
 
-  // ===============================
-  // 🔹 Cargar contenido existente
-  // ===============================
+  const [rows, setRows] = useState(2);
+  const [cols, setCols] = useState(2);
+  const [tableWidth, setTableWidth] = useState("100%");
+
+  // =====================
+  // CARGA INICIAL
+  // =====================
   useEffect(() => {
-    if (value) {
-      setInternalValue(value);
-    } else {
-      // 🔥 LIMPIAR EDITOR VISUAL
-      setInternalValue("");
-    }
+    setInternalValue(value || "");
   }, [value]);
 
-  // ===============================
-  // 🔹 Toolbar
-  // ===============================
+  // =====================
+  // APLICAR ESTILOS TABLAS
+  // =====================
+  const applyTableStyles = () => {
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return;
+
+    editor.root.querySelectorAll("table").forEach((table) => {
+      const width = table.dataset.width;
+      const centered = table.dataset.centered;
+      const borders = table.dataset.borders;
+
+      if (width) table.style.width = width;
+      if (centered === "true") table.style.margin = "0 auto";
+
+      if (borders === "false") table.classList.add("no-borders");
+      else table.classList.remove("no-borders");
+    });
+  };
+
+  // =====================
+  // REAPLICAR AL CAMBIAR
+  // =====================
+  useEffect(() => {
+    if (!quillRef.current) return;
+
+    const editor = quillRef.current.getEditor();
+    applyTableStyles();
+    editor.on("text-change", applyTableStyles);
+
+    return () => editor.off("text-change", applyTableStyles);
+  }, []);
+
+  // =====================
+  // INSERTAR TABLA
+  // =====================
+  const handleInsertTable = () => {
+    const editor = quillRef.current.getEditor();
+    editor.getModule("better-table").insertTable(rows, cols);
+
+    setTimeout(() => {
+      const tables = editor.root.querySelectorAll("table");
+      const table = tables[tables.length - 1];
+
+      if (!table) return;
+
+      table.dataset.width = tableWidth;
+      table.dataset.centered = "true";
+      table.dataset.borders = "true";
+
+      applyTableStyles();
+    }, 0);
+  };
+
+  // =====================
+  // ACCIONES TABLA
+  // =====================
+  const applyTableWidth = () => {
+    const editor = quillRef.current.getEditor();
+    editor.root.querySelectorAll("table").forEach((t) => {
+      t.dataset.width = tableWidth;
+      t.style.width = tableWidth;
+    });
+  };
+
+  const centerTables = () => {
+    const editor = quillRef.current.getEditor();
+    editor.root.querySelectorAll("table").forEach((t) => {
+      t.dataset.centered = "true";
+      t.style.margin = "0 auto";
+    });
+  };
+
+  const toggleTableBorders = () => {
+    const editor = quillRef.current.getEditor();
+    editor.root.querySelectorAll("table").forEach((t) => {
+      const enabled = t.dataset.borders !== "false";
+      t.dataset.borders = (!enabled).toString();
+      t.classList.toggle("no-borders");
+    });
+  };
+
+  // =====================
+  // IMAGEN
+  // =====================
+  const handleInsertImage = () => {
+    const url = prompt("URL de la imagen:");
+    if (!url) return;
+
+    const editor = quillRef.current.getEditor();
+    const range = editor.getSelection();
+    editor.insertEmbed(range.index, "image", url);
+  };
+
+  // =====================
+  // GUARDAR
+  // =====================
+  const handleSave = () => {
+    const editor = quillRef.current.getEditor();
+    onSave(editor.getContents());
+  };
+
+  // =====================
+  // CONFIG QUILL
+  // =====================
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, false] }],
@@ -33,168 +144,97 @@ export default function QuillEditor({ value, onSave }) {
       [{ align: [] }],
       [{ list: "ordered" }, { list: "bullet" }],
       ["link", "image", "video"],
+      [{ color: [] }, { background: [] }],
       ["clean"]
     ],
     imageResize: {
       parchment: Quill.import("parchment"),
       modules: ["Resize", "DisplaySize", "Toolbar"]
-    }
-  };
-
-  // ===============================
-  // 🔹 Redimensionar imagen real
-  // ===============================
-  const resizeImage = (file, newWidth) =>
-    new Promise((resolve) => {
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-
-      img.onload = () => {
-        const scale = newWidth / img.width;
-        const canvas = document.createElement("canvas");
-
-        canvas.width = newWidth;
-        canvas.height = img.height * scale;
-
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        canvas.toBlob(
-          (blob) => resolve(blob),
-          "image/jpeg",
-          0.95
-        );
-      };
-    });
-
-  // ===============================
-  // 🔹 Obtener ancho visual REAL
-  // ===============================
-  const getFinalImageWidth = (imgSrc) => {
-    const editor = quillRef.current.getEditor();
-    const imgs = editor.root.querySelectorAll("img");
-
-    for (const img of imgs) {
-      if (img.src === imgSrc) {
-        return parseInt(img.style.width) || img.width;
+    },
+    "better-table": {
+      operationMenu: {
+        items: {
+          unmergeCells: { text: "Unmerge cells" }
+        }
       }
-    }
-    return 600; // fallback seguro
-  };
-
-  // ===============================
-  // 🔹 Subir a Cloudinary
-  // ===============================
-  const uploadToCloudinary = async (imgUrl, finalWidth) => {
-    const blob = await fetch(imgUrl).then(r => r.blob());
-    const file = new File([blob], "image.jpg", { type: blob.type });
-
-    const resizedBlob = await resizeImage(file, finalWidth);
-    const resizedFile = new File([resizedBlob], "resized.jpg", {
-      type: "image/jpeg"
-    });
-
-    const formData = new FormData();
-    formData.append("file", resizedFile);
-    formData.append("upload_preset", "ml_default");
-
-    const CLOUD_NAME = "dzra5elov";
-
-    const upload = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-      {
-        method: "POST",
-        body: formData
-      }
-    );
-
-    const data = await upload.json();
-    return data.secure_url;
-  };
-
-  // ===============================
-  // 🔹 Limpiar Delta + conservar width
-  // ===============================
-  const cleanDeltaImages = async (delta) => {
-    const newOps = [];
-
-    for (const op of delta.ops) {
-      const img = op.insert?.image;
-
-      if (img && (img.startsWith("blob:") || img.startsWith("data:"))) {
-        const finalWidth = getFinalImageWidth(img);
-        const url = await uploadToCloudinary(img, finalWidth);
-
-        newOps.push({
-          insert: { image: url },
-          attributes: { width: finalWidth }
-        });
-      } else {
-        newOps.push(op);
-      }
-    }
-
-    return { ops: newOps };
-  };
-
-  // ===============================
-  // 🔘 GUARDAR
-  // ===============================
-  const handleSave = async () => {
-    const editor = quillRef.current.getEditor();
-    const delta = editor.getContents();
-    const cleanDelta = await cleanDeltaImages(delta);
-
-    onSave(cleanDelta);
-  };
-
-  // ===============================
-  // 🔹 Insertar imagen por URL pública
-  // ===============================
-  const handleInsertImageByUrl = () => {
-    const url = prompt("Ingrese la URL pública de la imagen:");
-    if (url) {
-      const editor = quillRef.current.getEditor();
-      const range = editor.getSelection();
-      editor.insertEmbed(range.index, "image", url);
     }
   };
 
   return (
     <div>
+      <button onClick={handleInsertImage}>Insertar imagen</button>
 
-      <button
-        onClick={handleInsertImageByUrl}
-        
-      >
-        Insertar Imagen por URL
-      </button>
+      <div style={{ margin: "10px 0" }}>
+        <label>
+          Filas:
+          <input
+            type="number"
+            min={1}
+            value={rows}
+            onChange={(e) => setRows(Number(e.target.value))}
+            style={{ width: 50, marginLeft: 5 }}
+          />
+        </label>
+
+        <label style={{ marginLeft: 10 }}>
+          Columnas:
+          <input
+            type="number"
+            min={1}
+            value={cols}
+            onChange={(e) => setCols(Number(e.target.value))}
+            style={{ width: 50, marginLeft: 5 }}
+          />
+        </label>
+
+        <label style={{ marginLeft: 10 }}>
+          Ancho:
+          <input
+            type="text"
+            value={tableWidth}
+            onChange={(e) => setTableWidth(e.target.value)}
+            style={{ width: 80, marginLeft: 5 }}
+          />
+        </label>
+
+        <button onClick={handleInsertTable} style={{ marginLeft: 10 }}>
+          Insertar tabla
+        </button>
+
+        <button onClick={applyTableWidth} style={{ marginLeft: 10 }}>
+          Aplicar ancho
+        </button>
+      </div>
+
+      <div style={{ marginBottom: 10 }}>
+        <button onClick={centerTables}>Centrar tablas</button>
+        <button onClick={toggleTableBorders} style={{ marginLeft: 10 }}>
+          Bordes ON/OFF
+        </button>
+      </div>
+
       <ReactQuill
         ref={quillRef}
         theme="snow"
         value={internalValue}
         onChange={setInternalValue}
         modules={modules}
-        style={{ height: "250px", marginBottom: "50px" }}
+        style={{ height: 260, marginBottom: 40 }}
       />
 
       <button
         onClick={handleSave}
         style={{
           padding: "10px 20px",
-          marginTop: "10px",
           background: "#1976d2",
-          border: "none",
           color: "white",
-          borderRadius: "5px",
+          border: "none",
+          borderRadius: 6,
           cursor: "pointer"
         }}
       >
         Guardar
       </button>
-
-      {/* 🔹 Nuevo botón para insertar imagen por URL */}
-      
     </div>
   );
 }

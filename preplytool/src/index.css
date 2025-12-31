@@ -16,3 +16,51 @@
 a{
     text-decoration: none;
 }
+
+/* Quitar bordes */
+.no-borders,
+.no-borders td,
+.no-borders th {
+  border: none !important;
+  
+
+}
+
+/* Evita colapsos raros */
+table {
+  border-collapse: collapse;
+ 
+}
+
+.ql-editor table{
+    width: 100% !important;
+     td{
+    padding: 5px;
+    border: 1px solid #ddd;
+    padding: 10px;
+  }
+
+
+  
+}
+
+
+.qlbt-operation-menu{
+    background-color: #fff;
+    padding: 10px;
+    border: 1px solid #aaa;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+
+}
+
+    .qlbt-operation-menu-item{
+        cursor: pointer;
+        padding: 5px;
+    }
+
+    .qlbt-operation-menu-item:hover{
+        background-color: #aaa;
+    }
