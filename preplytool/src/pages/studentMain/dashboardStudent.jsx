@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import Header from "../../layouts/header/Header";
 import AsideStudent from "../../layouts/asideStudent/asideStudent";
 import ReactQuill from "react-quill-new";
@@ -6,9 +7,7 @@ import "react-quill-new/dist/quill.snow.css";
 import { QuillDeltaToHtmlConverter } from "quill-delta-to-html";
 import "./dashboardStudent.css";
 
-/* ================================
-   CONVERTIR EJERCICIOS A INPUTS
-================================ */
+/* ================== EJERCICIOS ================== */
 function renderEjerciciosConInputs(delta) {
   if (!delta) return "";
 
@@ -16,38 +15,41 @@ function renderEjerciciosConInputs(delta) {
   let html = converter.convert();
 
   let index = 0;
-
-  html = html.replace(/\{([^}]+)\}/g, (_, respuesta) => {
-    return `
-      <span class="input-wrapper">
-        <input
-          type="text"
-          class="student-input"
-          data-answer="${respuesta.trim().toLowerCase()}"
-          placeholder="Respuesta"
-          id="input-${index++}"
-        />
-      </span>
-    `;
-  });
+  html = html.replace(/\{([^}]+)\}/g, (_, r) => `
+    <span class="input-wrapper">
+      <input
+        type="text"
+        class="student-input"
+        data-answer="${r.trim().toLowerCase()}"
+        placeholder="Respuesta"
+        id="input-${index++}"
+      />
+    </span>
+  `);
 
   return html;
 }
 
 export default function DashboardStudent() {
+  const { studentID } = useParams();
+
   const [leccionId, setLeccionId] = useState(null);
+  const [orderedLessons, setOrderedLessons] = useState([]);
+
   const [tituloClase, setTituloClase] = useState("");
   const [lecturaDelta, setLecturaDelta] = useState(null);
   const [ejerciciosHTML, setEjerciciosHTML] = useState("");
   const [pdfUrl, setPdfUrl] = useState(null);
-  const [vocabulario, setVocabulario] = useState([]);
 
+  const [completedLessons, setCompletedLessons] = useState({});
+  const [previousNotes, setPreviousNotes] = useState("");
+  const [currentNotes, setCurrentNotes] = useState("");
+
+  const [vocabulario, setVocabulario] = useState([]);
   const [definiciones, setDefiniciones] = useState({});
   const [ejemplos, setEjemplos] = useState({});
 
-  /* ================================
-     API - DEFINICIONES
-  ================================ */
+  /* ================== APIs vocabulario ================== */
   const obtenerDefinicion = async (palabra) => {
     try {
       const res = await fetch(
@@ -66,102 +68,154 @@ export default function DashboardStudent() {
         `https://corsproxy.io/?https://tatoeba.org/es/api_v0/search?query=${palabra}&from=spa&to=eng`
       );
       const data = await res.json();
-
       const ejemplo = data?.results?.[0];
-      if (!ejemplo) return "Sin ejemplo disponible";
-
-      const traduccion = ejemplo.translations?.[0]?.[0]?.text || "";
-      return `${ejemplo.text}${traduccion ? " — " + traduccion : ""}`;
+      if (!ejemplo) return "Sin ejemplo";
+      return `${ejemplo.text} — ${ejemplo.translations?.[0]?.[0]?.text || ""}`;
     } catch {
       return "Error al obtener ejemplo";
     }
   };
 
-  /* ================================
-     CARGAR VOCABULARIO
-  ================================ */
+  /* ================== PROGRESO ================== */
   useEffect(() => {
-    if (vocabulario.length === 0) return;
+    fetch(`http://localhost:3000/api/student-lessons/${studentID}`)
+      .then(res => res.json())
+      .then(data => {
+        const map = {};
+        data.forEach(r => {
+          map[r.lesson_id] = {
+            completed: r.completed,
+            notes: r.notes
+          };
+        });
+        setCompletedLessons(map);
+      });
+  }, [studentID]);
 
-    const cargarDatos = async () => {
-      const defs = {};
-      const ejems = {};
+  /* ================== ORDEN DE LECCIONES ================== */
+  useEffect(() => {
+    fetch("http://localhost:3000/api/services/nivel/niveles/completos")
+      .then(res => res.json())
+      .then(data => {
+        const list = [];
+        data.forEach(n =>
+          n.stages.forEach(s =>
+            s.lessons.forEach(l =>
+              list.push({ id: l.id, name: l.name })
+            )
+          )
+        );
+        list.sort((a, b) => a.name.localeCompare(b.name));
+        setOrderedLessons(list);
+      });
+  }, []);
 
-      await Promise.all(
-        vocabulario.map(async (item) => {
-          defs[item.palabra] = await obtenerDefinicion(item.palabra);
-          ejems[item.palabra] = await obtenerEjemplo(item.palabra);
-        })
-      );
+  const currentIndex = orderedLessons.findIndex(l => l.id === leccionId);
+  const previousLessonId =
+    currentIndex > 0 ? orderedLessons[currentIndex - 1].id : null;
 
-      setDefiniciones(defs);
-      setEjemplos(ejems);
-    };
-
-    cargarDatos();
-  }, [vocabulario]);
-
-  /* ================================
-     CARGAR LECCIÓN
-  ================================ */
+  /* ================== LECCIÓN ================== */
   useEffect(() => {
     if (!leccionId) return;
 
-    setTituloClase("");
-    setLecturaDelta(null);
-    setEjerciciosHTML("");
-    setPdfUrl(null);
-    setVocabulario([]);
+    fetch(`http://localhost:3000/api/services/leccion/${leccionId}`)
+      .then(res => res.json())
+      .then(data => {
+        setTituloClase(data.titulo_clase);
+        setLecturaDelta(data.contenido_leccion);
+        setPdfUrl(data.ruta_pdf);
 
-    const fetchLeccion = async () => {
-      const res = await fetch(
-        `http://localhost:3000/api/services/leccion/${leccionId}`
-      );
-      if (!res.ok) return;
+        if (data.ejercicios_leccion) {
+          setEjerciciosHTML(
+            renderEjerciciosConInputs(data.ejercicios_leccion)
+          );
+        } else {
+          setEjerciciosHTML("");
+        }
+      });
 
-      const data = await res.json();
-
-      setTituloClase(data.titulo_clase || "");
-      setLecturaDelta(data.contenido_leccion || null);
-
-      if (data.ejercicios_leccion) {
-        setEjerciciosHTML(
-          renderEjerciciosConInputs(data.ejercicios_leccion)
-        );
-      }
-
-      setPdfUrl(data.ruta_pdf || null);
-    };
-
-    const fetchVocabulario = async () => {
-      const res = await fetch(
-        `http://localhost:3000/api/vocabulario/${leccionId}`
-      );
-      if (!res.ok) return;
-
-      const data = await res.json();
-      setVocabulario(data || []);
-    };
-
-    fetchLeccion();
-    fetchVocabulario();
+    fetch(`http://localhost:3000/api/vocabulario/${leccionId}`)
+      .then(res => res.json())
+      .then(setVocabulario);
   }, [leccionId]);
 
-  /* ================================
-     REVISAR RESPUESTAS
-  ================================ */
-  const revisarRespuestas = () => {
-    document.querySelectorAll(".student-input").forEach((input) => {
-      const correcta = input.dataset.answer?.trim().toLowerCase();
-      const usuario = input.value.trim().toLowerCase();
+  /* ================== CARGAR DEFINICIONES ================== */
+  useEffect(() => {
+    if (!vocabulario.length) return;
 
-      if (usuario === correcta) {
-        input.style.border = "2px solid green";
-        input.style.background = "#e8f5e9";
-      } else {
-        input.style.border = "2px solid red";
-        input.style.background = "#ffebee";
+    const load = async () => {
+      const defs = {};
+      const exs = {};
+
+      for (const v of vocabulario) {
+        defs[v.palabra] = await obtenerDefinicion(v.palabra);
+        exs[v.palabra] = await obtenerEjemplo(v.palabra);
       }
+
+      setDefiniciones(defs);
+      setEjemplos(exs);
+    };
+
+    load();
+  }, [vocabulario]);
+
+  /* ================== NOTAS ================== */
+  useEffect(() => {
+    setPreviousNotes(
+      previousLessonId ? completedLessons[previousLessonId]?.notes || "" : ""
+    );
+    setCurrentNotes(completedLessons[leccionId]?.notes || "");
+  }, [previousLessonId, leccionId, completedLessons]);
+
+  const saveNotes = async (lessonId, notes) => {
+    if (!lessonId) return;
+
+    await fetch("http://localhost:3000/api/student-lessons/notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        student_id: Number(studentID),
+        lesson_id: Number(lessonId),
+        notes
+      })
+    });
+
+    setCompletedLessons(prev => ({
+      ...prev,
+      [lessonId]: {
+        ...prev[lessonId],
+        notes
+      }
+    }));
+  };
+
+  const toggleCompleted = async (checked) => {
+    await fetch("http://localhost:3000/api/student-lessons/update", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        student_id: Number(studentID),
+        lesson_id: Number(leccionId),
+        completed: checked
+      })
+    });
+
+    setCompletedLessons(prev => ({
+      ...prev,
+      [leccionId]: {
+        ...prev[leccionId],
+        completed: checked
+      }
+    }));
+  };
+
+  const hasExercises = ejerciciosHTML.includes("student-input");
+
+  const revisarRespuestas = () => {
+    document.querySelectorAll(".student-input").forEach(input => {
+      const ok = input.value.trim().toLowerCase() === input.dataset.answer;
+      input.style.border = ok ? "2px solid green" : "2px solid red";
+      input.style.background = ok ? "#e8f5e9" : "#ffebee";
     });
   };
 
@@ -171,56 +225,63 @@ export default function DashboardStudent() {
 
       <main className="main">
         <div className="aside">
-          <AsideStudent onSelect={setLeccionId} />
+          <AsideStudent
+            onSelect={setLeccionId}
+            completedLessons={completedLessons}
+          />
         </div>
 
         <div className="dashboard_content">
           {!leccionId ? (
-            <div className="tablero_sin_seleccion">
-              <h3>Tablero</h3>
-              <p>Selecciona un contenido en el menú lateral.</p>
-            </div>
+            <p>Selecciona una lección</p>
           ) : (
             <>
-              <h2 style={{ textAlign: "center" }}>{tituloClase}</h2>
+              {/* NOTAS ANTERIORES */}
+              {previousLessonId && (
+                <>
+                  <h3>📝 Notas de la clase anterior</h3>
+                  <textarea
+                    value={previousNotes}
+                    onChange={e => setPreviousNotes(e.target.value)}
+                    onBlur={() =>
+                      saveNotes(previousLessonId, previousNotes)
+                    }
+                    style={{ width: "100%", minHeight: 120 }}
+                  />
+                </>
+              )}
+
+              <h2>{tituloClase}</h2>
 
               {lecturaDelta && (
                 <ReactQuill value={lecturaDelta} readOnly theme="bubble" />
               )}
 
               {pdfUrl && (
-                <>
-                  <h3 style={{ marginTop: 30 }}>Documento de apoyo</h3>
-                  <iframe
-                    src={pdfUrl}
-                    width="100%"
-                    height="450px"
-                    style={{ border: "1px solid #ccc", borderRadius: "8px" }}
-                  />
-
-                  <a target="_blank" rel="noreferrer" href={pdfUrl}>
-                    Ver documento completo
-                  </a>
-                </>
+                <iframe
+                  src={pdfUrl}
+                  width="100%"
+                  height="450px"
+                  style={{ border: "1px solid #ccc" }}
+                />
               )}
 
-              {ejerciciosHTML && (
+              {hasExercises && (
                 <>
                   <div
                     className="ejercicios-estudiante"
                     dangerouslySetInnerHTML={{ __html: ejerciciosHTML }}
                   />
-
                   <button className="check" onClick={revisarRespuestas}>
                     Revisar respuestas
                   </button>
                 </>
               )}
 
+              {/* VOCABULARIO */}
               {vocabulario.length > 0 && (
                 <>
-                  <h3 style={{ marginTop: "30px" }}>Vocabulario</h3>
-
+                  <h3 style={{ marginTop: 30 }}>Vocabulario</h3>
                   <table className="vocab-table">
                     <thead>
                       <tr>
@@ -230,17 +291,34 @@ export default function DashboardStudent() {
                       </tr>
                     </thead>
                     <tbody>
-                      {vocabulario.map((item, index) => (
-                        <tr key={index}>
-                          <td>{item.palabra}</td>
-                          <td>{definiciones[item.palabra] || "Cargando..."}</td>
-                          <td>{ejemplos[item.palabra] || "Cargando..."}</td>
+                      {vocabulario.map((v, i) => (
+                        <tr key={i}>
+                          <td>{v.palabra}</td>
+                          <td>{definiciones[v.palabra] || "Cargando..."}</td>
+                          <td>{ejemplos[v.palabra] || "Cargando..."}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </>
               )}
+
+              <label style={{ display: "block", marginTop: 20 }}>
+                <input
+                  type="checkbox"
+                  checked={completedLessons[leccionId]?.completed || false}
+                  onChange={(e) => toggleCompleted(e.target.checked)}
+                />
+                Marcar como completada
+              </label>
+
+              <h3 style={{ marginTop: 30 }}>📝 Notas para la siguiente clase</h3>
+              <textarea
+                value={currentNotes}
+                onChange={e => setCurrentNotes(e.target.value)}
+                onBlur={() => saveNotes(leccionId, currentNotes)}
+                style={{ width: "100%", minHeight: 120 }}
+              />
             </>
           )}
         </div>

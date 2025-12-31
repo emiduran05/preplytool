@@ -199,7 +199,7 @@ export default function Main() {
                                     </span>
                                 </p>
 
-                                <button className="alumno__btn">Ir al perfil</button>
+                                <a href={`/student/${alumno.id}`} className="alumno__btn">Ir al perfil</a>
                             </div>
                         ))}
                     </div>

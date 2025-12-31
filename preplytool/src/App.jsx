@@ -9,7 +9,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Main />} />
         <Route path="/dashboard" element={<Dashboard/>} />
-        <Route path="/student" element={<DashboardStudent />} />
+        <Route path="/student/:studentID" element={<DashboardStudent />} />
         {/* <Route path="/book/:nombre" element={<BookView />} /> */}
       </Routes>
     </BrowserRouter>
