@@ -105,7 +105,6 @@ export default function DashboardStudent() {
             )
           )
         );
-        list.sort((a, b) => a.name.localeCompare(b.name));
         setOrderedLessons(list);
       });
   }, []);

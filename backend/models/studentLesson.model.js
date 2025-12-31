@@ -24,18 +24,19 @@ export const StudentLesson = {
     return rows[0];
   },
 
-  async updateNotes(studentId, lessonId, notes) {
-    const { rows } = await pool.query(
-      `
-      INSERT INTO student_lessons (student_id, lesson_id, notes)
+ async updateNotes(studentId, lessonId, notes) {
+  const { rows } = await pool.query(
+    `
+    INSERT INTO student_lessons (student_id, lesson_id, notes)
       VALUES ($1, $2, $3)
       ON CONFLICT (student_id, lesson_id)
       DO UPDATE SET notes = EXCLUDED.notes
       RETURNING *;
-      `,
-      [studentId, lessonId, notes]
-    );
+    `,
+    [studentId, lessonId, notes]
+  );
 
-    return rows[0];
-  }
+  return rows;
+}
+
 };

@@ -81,6 +81,44 @@ const alumnosController = {
             console.error(error);
             res.status(500).json({ error: "Error al actualizar alumno" });
         }
+    },
+
+    UpdateSesion: async(req,res) => {
+        try {
+            const {id} = req.params;
+            const updated = await alumnosModel.updateSesion({id});
+
+             if (!updated) {
+                return res.status(404).json({ error: "Alumno no encontrado" });
+            }
+
+            res.json({ message: "Alumno updateado correctamente", alumno: updated });
+
+            
+        } catch (error) {
+
+            console.error(error);
+            res.status(500).json({ error: "Error al actualizar alumno" });
+            
+        }
+    },
+
+    getProgress: async(req,res) => {
+        try {
+            const {id} = req.params;
+            const progress = await alumnosModel.getProgress({id});
+            if (!progress) {
+                return res.status(404).json({ error: "Alumno no encontrado" });
+            }
+
+            res.json({ message: "Alumno updateado correctamente", alumno: progress });
+
+            
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: "Error al actualizar alumno" });
+            
+        }
     }
 
 };
