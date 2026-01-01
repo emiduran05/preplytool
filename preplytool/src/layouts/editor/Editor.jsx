@@ -2,138 +2,44 @@ import { useEffect, useRef, useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 
-import Quill from "../../quillSetup"; // ✅ IMPORTANTE
-
 export default function QuillEditor({ value, onSave }) {
   const quillRef = useRef(null);
   const isSettingContent = useRef(false);
 
   const [internalValue, setInternalValue] = useState(value || "");
 
-  const [rows, setRows] = useState(2);
-  const [cols, setCols] = useState(2);
-  const [tableWidth, setTableWidth] = useState("100%");
-
-  // ============================
-  // SINCRONIZAR CONTENIDO
-  // ============================
+  // =============================
+  // Sync externo → editor
+  // =============================
   useEffect(() => {
-    if (value === null || value === undefined) return;
+    if (value === undefined || value === null) return;
     if (isSettingContent.current) return;
 
     isSettingContent.current = true;
     setInternalValue(value);
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       isSettingContent.current = false;
-    }, 0);
+    });
   }, [value]);
 
-  // ============================
-  // APLICAR ESTILOS A TABLAS
-  // ============================
-  const applyTableStyles = () => {
-    const editor = quillRef.current?.getEditor();
-    if (!editor) return;
-
-    editor.root.querySelectorAll("table").forEach((table) => {
-      const width = table.dataset.width;
-      const centered = table.dataset.centered;
-      const borders = table.dataset.borders;
-
-      if (width) table.style.width = width;
-      if (centered === "true") table.style.margin = "0 auto";
-
-      if (borders === "false") table.classList.add("no-borders");
-      else table.classList.remove("no-borders");
-    });
-  };
-
-  // ============================
-  // ESCUCHAR CAMBIOS
-  // ============================
-  useEffect(() => {
-    const editor = quillRef.current?.getEditor();
-    if (!editor) return;
-
-    applyTableStyles();
-    editor.on("text-change", applyTableStyles);
-
-    return () => {
-      editor.off("text-change", applyTableStyles);
-    };
-  }, []);
-
-  // ============================
-  // TABLAS
-  // ============================
-  const handleInsertTable = () => {
-    const editor = quillRef.current?.getEditor();
-    if (!editor) return;
-
-    editor.getModule("better-table").insertTable(rows, cols);
-
-    setTimeout(() => {
-      const tables = editor.root.querySelectorAll("table");
-      const table = tables[tables.length - 1];
-      if (!table) return;
-
-      table.dataset.width = tableWidth;
-      table.dataset.centered = "true";
-      table.dataset.borders = "true";
-
-      applyTableStyles();
-    }, 0);
-  };
-
-  const applyTableWidth = () => {
-    const editor = quillRef.current?.getEditor();
-    if (!editor) return;
-
-    editor.root.querySelectorAll("table").forEach((t) => {
-      t.dataset.width = tableWidth;
-      t.style.width = tableWidth;
-    });
-  };
-
-  const centerTables = () => {
-    const editor = quillRef.current?.getEditor();
-    if (!editor) return;
-
-    editor.root.querySelectorAll("table").forEach((t) => {
-      t.dataset.centered = "true";
-      t.style.margin = "0 auto";
-    });
-  };
-
-  const toggleTableBorders = () => {
-    const editor = quillRef.current?.getEditor();
-    if (!editor) return;
-
-    editor.root.querySelectorAll("table").forEach((t) => {
-      const enabled = t.dataset.borders !== "false";
-      t.dataset.borders = (!enabled).toString();
-      t.classList.toggle("no-borders");
-    });
-  };
-
-  // ============================
-  // IMAGEN
-  // ============================
+  // =============================
+  // Insertar imagen
+  // =============================
   const handleInsertImage = () => {
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return;
+
     const url = prompt("URL de la imagen:");
     if (!url) return;
 
-    const editor = quillRef.current?.getEditor();
-    if (!editor) return;
-
-    const range = editor.getSelection();
+    const range = editor.getSelection(true);
     editor.insertEmbed(range.index, "image", url);
   };
 
-  // ============================
-  // GUARDAR
-  // ============================
+  // =============================
+  // Guardar
+  // =============================
   const handleSave = () => {
     const editor = quillRef.current?.getEditor();
     if (!editor) return;
@@ -141,84 +47,22 @@ export default function QuillEditor({ value, onSave }) {
     onSave(editor.getContents());
   };
 
-  // ============================
-  // CONFIGURACIÓN QUILL
-  // ============================
+  // =============================
+  // CONFIG
+  // =============================
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, false] }],
       ["bold", "italic", "underline"],
-      [{ align: [] }],
       [{ list: "ordered" }, { list: "bullet" }],
-      ["link", "image", "video"],
-      [{ color: [] }, { background: [] }],
+      ["link", "image"],
       ["clean"]
-    ],
-    imageResize: {
-      parchment: Quill.import("parchment"),
-      modules: ["Resize", "DisplaySize", "Toolbar"]
-    },
-    "better-table": {
-      operationMenu: {
-        items: {
-          unmergeCells: { text: "Unmerge cells" }
-        }
-      }
-    }
+    ]
   };
 
   return (
     <div>
       <button onClick={handleInsertImage}>Insertar imagen</button>
-
-      <div style={{ margin: "10px 0" }}>
-        <label>
-          Filas:
-          <input
-            type="number"
-            min={1}
-            value={rows}
-            onChange={(e) => setRows(Number(e.target.value))}
-            style={{ width: 50, marginLeft: 5 }}
-          />
-        </label>
-
-        <label style={{ marginLeft: 10 }}>
-          Columnas:
-          <input
-            type="number"
-            min={1}
-            value={cols}
-            onChange={(e) => setCols(Number(e.target.value))}
-            style={{ width: 50, marginLeft: 5 }}
-          />
-        </label>
-
-        <label style={{ marginLeft: 10 }}>
-          Ancho:
-          <input
-            type="text"
-            value={tableWidth}
-            onChange={(e) => setTableWidth(e.target.value)}
-            style={{ width: 80, marginLeft: 5 }}
-          />
-        </label>
-
-        <button onClick={handleInsertTable} style={{ marginLeft: 10 }}>
-          Insertar tabla
-        </button>
-
-        <button onClick={applyTableWidth} style={{ marginLeft: 10 }}>
-          Aplicar ancho
-        </button>
-      </div>
-
-      <div style={{ marginBottom: 10 }}>
-        <button onClick={centerTables}>Centrar tablas</button>
-        <button onClick={toggleTableBorders} style={{ marginLeft: 10 }}>
-          Bordes ON/OFF
-        </button>
-      </div>
 
       <ReactQuill
         ref={quillRef}
@@ -237,7 +81,7 @@ export default function QuillEditor({ value, onSave }) {
         style={{
           padding: "10px 20px",
           background: "#1976d2",
-          color: "white",
+          color: "#fff",
           border: "none",
           borderRadius: 6,
           cursor: "pointer"
