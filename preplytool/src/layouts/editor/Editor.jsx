@@ -1,20 +1,10 @@
 // src/layouts/editor/Editor.jsx
 import { useEffect, useRef, useState, Suspense, lazy } from "react";
 import Quill from "quill";
-import ImageResize from "quill-image-resize-module-react";
-import QuillBetterTable from "quill-better-table";
 import "react-quill-new/dist/quill.snow.css";
 
-// Import dinámico con React.lazy (para que cargue solo en cliente)
+// Import dinámico con React.lazy
 const ReactQuill = lazy(() => import("react-quill-new"));
-
-// =====================
-// REGISTROS DE MÓDULOS
-// =====================
-if (typeof window !== "undefined") {
-  Quill.register("modules/imageResize", ImageResize);
-  Quill.register("modules/better-table", QuillBetterTable);
-}
 
 export default function QuillEditor({ value, onSave }) {
   const quillRef = useRef(null);
@@ -23,6 +13,19 @@ export default function QuillEditor({ value, onSave }) {
   const [rows, setRows] = useState(2);
   const [cols, setCols] = useState(2);
   const [tableWidth, setTableWidth] = useState("100%");
+
+  // =====================
+  // REGISTRO DE MÓDULOS SOLO EN CLIENTE
+  // =====================
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const ImageResize = require("quill-image-resize-module-react").default;
+      const QuillBetterTable = require("quill-better-table").default;
+
+      Quill.register("modules/imageResize", ImageResize);
+      Quill.register("modules/better-table", QuillBetterTable);
+    }
+  }, []);
 
   // =====================
   // CARGA INICIAL
@@ -51,9 +54,6 @@ export default function QuillEditor({ value, onSave }) {
     });
   };
 
-  // =====================
-  // REAPLICAR AL CAMBIAR
-  // =====================
   useEffect(() => {
     const editor = quillRef.current?.getEditor();
     if (!editor) return;
@@ -76,7 +76,6 @@ export default function QuillEditor({ value, onSave }) {
     setTimeout(() => {
       const tables = editor.root.querySelectorAll("table");
       const table = tables[tables.length - 1];
-
       if (!table) return;
 
       table.dataset.width = tableWidth;
