@@ -11,7 +11,7 @@ export default function Vocabulary({ lessonId }) {
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/vocabulario/${lessonId}`
+                `https://preplytool-2tgl.vercel.app/api/vocabulario/${lessonId}`
             );
 
             if (!response.ok) throw new Error();
@@ -46,7 +46,7 @@ export default function Vocabulary({ lessonId }) {
 
         try {
             const response = await fetch(
-                `http://localhost:3000/api/vocabulario/${lessonId}`,
+                `https://preplytool-2tgl.vercel.app/api/vocabulario/${lessonId}`,
                 {
                     method: "POST",
                     headers: {
@@ -71,7 +71,7 @@ export default function Vocabulary({ lessonId }) {
     const handleDelete = async (word) => {
         try {
             const response = await fetch(
-                `http://localhost:3000/api/vocabulario/${lessonId}/${word}`,
+                `https://preplytool-2tgl.vercel.app/vocabulario/${lessonId}/${word}`,
                 {
                     method: "DELETE"
                 }

@@ -31,7 +31,7 @@ export default function Dashboard() {
     const fetchLeccion = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3000/api/services/leccion/${leccionId}`
+          `https://preplytool-2tgl.vercel.app/api/services/leccion/${leccionId}`
         );
 
         if (!res.ok) return;
@@ -79,7 +79,7 @@ export default function Dashboard() {
 
         const data = await res.json();
 
-        await fetch("http://localhost:3000/api/services/leccion/documento", {
+        await fetch("https://preplytool-2tgl.vercel.app/api/services/leccion/documento", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -94,7 +94,7 @@ export default function Dashboard() {
       }
 
       // 🔹 Guardar todo (incluye título)
-      await fetch("http://localhost:3000/api/services/leccion/contenido", {
+      await fetch("https://preplytool-2tgl.vercel.app/api/services/leccion/contenido", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -125,7 +125,7 @@ export default function Dashboard() {
     if (!confirmDelete) return;
 
     try {
-      await fetch("http://localhost:3000/api/services/leccion/documento", {
+      await fetch("https://preplytool-2tgl.vercel.app/api/services/leccion/documento", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -158,7 +158,7 @@ export default function Dashboard() {
 
     try {
       const res = await fetch(
-        "http://localhost:3000/api/services/leccion/delete",
+        "https://preplytool-2tgl.vercel.app/api/services/leccion/delete",
         {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
@@ -187,6 +187,7 @@ export default function Dashboard() {
       <Header />
 
       <main className="main">
+        
         <div className="aside">
           <Aside onSelect={setLeccionId} />
         </div>

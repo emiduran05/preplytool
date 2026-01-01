@@ -8,7 +8,7 @@ export default function AsideStudent({ onSelect, completedLessons }) {
   const [openStage, setOpenStage] = useState(null);
 
   async function fetchLevelsData() {
-    await fetch(`http://localhost:3000/api/services/nivel/niveles/completos`)
+    await fetch(`https://preplytool-2tgl.vercel.app/api/services/nivel/niveles/completos`)
       .then(res => res.json())
       .then(data => {
         setLevelsData(data);

@@ -78,7 +78,7 @@ export default function DashboardStudent() {
 
   /* ================== PROGRESO ================== */
   useEffect(() => {
-    fetch(`http://localhost:3000/api/student-lessons/${studentID}`)
+    fetch(`https://preplytool-2tgl.vercel.app/api/student-lessons/${studentID}`)
       .then(res => res.json())
       .then(data => {
         const map = {};
@@ -94,7 +94,7 @@ export default function DashboardStudent() {
 
   /* ================== ORDEN DE LECCIONES ================== */
   useEffect(() => {
-    fetch("http://localhost:3000/api/services/nivel/niveles/completos")
+    fetch("https://preplytool-2tgl.vercel.app/api/services/nivel/niveles/completos")
       .then(res => res.json())
       .then(data => {
         const list = [];
@@ -117,7 +117,7 @@ export default function DashboardStudent() {
   useEffect(() => {
     if (!leccionId) return;
 
-    fetch(`http://localhost:3000/api/services/leccion/${leccionId}`)
+    fetch(`https://preplytool-2tgl.vercel.app/api/services/leccion/${leccionId}`)
       .then(res => res.json())
       .then(data => {
         setTituloClase(data.titulo_clase);
@@ -133,7 +133,7 @@ export default function DashboardStudent() {
         }
       });
 
-    fetch(`http://localhost:3000/api/vocabulario/${leccionId}`)
+    fetch(`https://preplytool-2tgl.vercel.app/api/vocabulario/${leccionId}`)
       .then(res => res.json())
       .then(setVocabulario);
   }, [leccionId]);
@@ -169,7 +169,7 @@ export default function DashboardStudent() {
   const saveNotes = async (lessonId, notes) => {
     if (!lessonId) return;
 
-    await fetch("http://localhost:3000/api/student-lessons/notes", {
+    await fetch("https://preplytool-2tgl.vercel.app/api/student-lessons/notes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -189,7 +189,7 @@ export default function DashboardStudent() {
   };
 
   const toggleCompleted = async (checked) => {
-    await fetch("http://localhost:3000/api/student-lessons/update", {
+    await fetch("https://preplytool-2tgl.vercel.app/api/student-lessons/update", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

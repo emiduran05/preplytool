@@ -21,7 +21,7 @@ export default function Aside({ onSelect }) {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
     async function fetchLevelsData() {
-        await fetch(`http://localhost:3000/api/services/nivel/niveles/completos`)
+        await fetch(`https://preplytool-2tgl.vercel.app/api/services/nivel/niveles/completos`)
             .then(res => res.json())
             .then(data => {
                 setLevelsData(data);
@@ -32,7 +32,7 @@ export default function Aside({ onSelect }) {
 
     // --- POST Requests ---
     async function postLevel(name) {
-        return fetch("http://localhost:3000/api/services/nivel/create", {
+        return fetch("https://preplytool-2tgl.vercel.app/api/services/nivel/create", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ nombre: name })
@@ -40,7 +40,7 @@ export default function Aside({ onSelect }) {
     }
 
     async function postStage(name, nivelId) {
-        return fetch("http://localhost:3000/api/services/etapa/create", {
+        return fetch("https://preplytool-2tgl.vercel.app/api/services/etapa/create", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ nombre: name, nivel_id: nivelId })
@@ -48,7 +48,7 @@ export default function Aside({ onSelect }) {
     }
 
     async function postLesson(name, etapaId) {
-        return fetch("http://localhost:3000/api/services/leccion/create", {
+        return fetch("https://preplytool-2tgl.vercel.app/api/services/leccion/create", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ nombre: name, etapa_id: etapaId })
@@ -58,7 +58,7 @@ export default function Aside({ onSelect }) {
     // -------- EDIT REQUEST --------
    async function postEdit(type, id, name) {
 
-    const response = await fetch(`http://localhost:3000/api/services/${type}/update`, {
+    const response = await fetch(`https://preplytool-2tgl.vercel.app/api/services/${type}/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre: name, id: id })
@@ -76,7 +76,7 @@ export default function Aside({ onSelect }) {
 
     // -------- DELETE REQUEST --------
     async function postDelete(type, id) {
-        return fetch(`http://127.0.0.1:3000/api/services/${type}/delete`, {
+        return fetch(`https://preplytool-2tgl.vercel.app/api/services/${type}/delete`, {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({

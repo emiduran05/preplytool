@@ -11,7 +11,7 @@ export default function Main() {
 
     async function obtenerAlumnos() {
         try {
-            const res = await fetch("http://127.0.0.1:3000/api/alumnos");
+            const res = await fetch("https://preplytool-2tgl.vercel.app/api/alumnos");
             const data = await res.json();
 
             const alumnosConProgreso = data.map(a => ({ ...a, progreso: 0 }));
@@ -29,7 +29,7 @@ export default function Main() {
 
     async function getProgress(id) {
         try {
-            const res = await fetch(`http://127.0.0.1:3000/api/alumnos/progress/${id}`);
+            const res = await fetch(`https://preplytool-2tgl.vercel.app/api/alumnos/progress/${id}`);
             const data = await res.json();
 
             setAlumnos(prev =>
@@ -42,7 +42,7 @@ export default function Main() {
 
     async function updateSession(id) {
         try {
-            await fetch(`http://127.0.0.1:3000/api/alumnos/update_sesion/${id}`, {
+            await fetch(`https://preplytool-2tgl.vercel.app/api/alumnos/update_sesion/${id}`, {
                 method: "PUT"
             });
 
@@ -64,7 +64,7 @@ export default function Main() {
 
     async function addAlumno(nombre) {
         try {
-            const res = await fetch("http://127.0.0.1:3000/api/alumnos/add", {
+            const res = await fetch("https://preplytool-2tgl.vercel.app/api/alumnos/add", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ nombre })
@@ -80,7 +80,7 @@ export default function Main() {
 
     async function editAlumno(id, newName) {
         try {
-            const res = await fetch(`http://127.0.0.1:3000/api/alumnos/update/${id}/${newName}`, { method: "PUT" });
+            const res = await fetch(`https://preplytool-2tgl.vercel.app/api/alumnos/update/${id}/${newName}`, { method: "PUT" });
             const data = await res.json();
 
             setAlumnos(prev =>
@@ -95,7 +95,7 @@ export default function Main() {
 
     async function deleteAlumno(id) {
         try {
-            await fetch(`http://127.0.0.1:3000/api/alumnos/delete/${id}`, { method: "DELETE" });
+            await fetch(`https://preplytool-2tgl.vercel.app/api/alumnos/delete/${id}`, { method: "DELETE" });
             setAlumnos(prev => prev.filter(a => a.id !== id));
         } catch (err) {
             console.error("Error al eliminar alumno:", err);
