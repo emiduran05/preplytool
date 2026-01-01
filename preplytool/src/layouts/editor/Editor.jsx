@@ -1,7 +1,7 @@
 // src/layouts/editor/Editor.jsx
 import { useEffect, useRef, useState, Suspense, lazy } from "react";
 import Quill from "quill";
-import ImageResize from "quill-image-resize-module-react";
+import ImageResize from "quill-image-resize-module";
 import QuillBetterTable from "quill-better-table";
 import "react-quill-new/dist/quill.snow.css";
 

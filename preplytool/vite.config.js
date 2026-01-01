@@ -6,8 +6,13 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       "quill",
-      "quill-image-resize-module-react",
+      "quill-image-resize-module",
       "quill-better-table"
     ]
+  },
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true
+    }
   }
 });
