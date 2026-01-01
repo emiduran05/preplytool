@@ -21,3 +21,31 @@
   width: 100%;
   border-collapse: collapse;
 }
+
+/* Imágenes dentro del editor */
+.ql-editor img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 10px auto;
+}
+
+/* Contenedor resizable */
+.resizable {
+  display: inline-block;
+  resize: both;
+  overflow: auto;
+  max-width: 100%;
+}
+.resizable img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Tablas sin bordes */
+.ql-editor table.no-borders,
+.ql-editor table.no-borders td,
+.ql-editor table.no-borders th {
+  border: none !important;
+}

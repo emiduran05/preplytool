@@ -24,6 +24,7 @@
     "quill-delta-to-html": "^0.12.1",
     "quill-image-resize-module": "^3.0.0",
     "quill-image-resize-module-react": "^3.0.0",
+    "quill-image-resize-module2": "^3.0.0",
     "quill-table": "^1.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
