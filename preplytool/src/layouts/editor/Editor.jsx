@@ -1,14 +1,11 @@
 // src/layouts/editor/Editor.jsx
 import { useEffect, useRef, useState, Suspense, lazy } from "react";
 import Quill from "quill";
-
-// Importa las versiones minificadas desde dist para evitar el error de Symbol.toStringTag
-import ImageResize from "quill-image-resize-module-react/dist/quill.imageResize.min.js";
-import QuillBetterTable from "quill-better-table/dist/quill-better-table.min.js";
-
+import ImageResize from "quill-image-resize-module-react";
+import QuillBetterTable from "quill-better-table";
 import "react-quill-new/dist/quill.snow.css";
 
-// Import dinámico con React.lazy (equivalente a next/dynamic en Vite)
+// Import dinámico con React.lazy (para que cargue solo en cliente)
 const ReactQuill = lazy(() => import("react-quill-new"));
 
 // =====================
