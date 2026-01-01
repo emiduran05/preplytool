@@ -1,7 +1,7 @@
 // src/layouts/editor/Editor.jsx
 import { useEffect, useRef, useState, Suspense, lazy } from "react";
 import Quill from "quill";
-import ImageResize from "quill-image-resize-module";
+import ImageResize from "quill-image-resize-module-react";
 import QuillBetterTable from "quill-better-table";
 import "react-quill-new/dist/quill.snow.css";
 
@@ -12,12 +12,8 @@ const ReactQuill = lazy(() => import("react-quill-new"));
 // REGISTROS DE MÓDULOS
 // =====================
 if (typeof window !== "undefined") {
-  try {
-    Quill.register("modules/imageResize", ImageResize);
-    Quill.register("modules/better-table", QuillBetterTable);
-  } catch (e) {
-    console.warn("Error registrando módulos Quill:", e);
-  }
+  Quill.register("modules/imageResize", ImageResize);
+  Quill.register("modules/better-table", QuillBetterTable);
 }
 
 export default function QuillEditor({ value, onSave }) {
