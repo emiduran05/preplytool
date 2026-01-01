@@ -7,38 +7,30 @@ export default function Main() {
     const [alumnos, setAlumnos] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Obtener alumnos desde el backend
+    // ------------------ Funciones Backend ------------------
+
     async function obtenerAlumnos() {
         try {
             const res = await fetch("http://127.0.0.1:3000/api/alumnos");
             const data = await res.json();
 
-            // Inicializa alumnos con progreso 0
-            const alumnosConProgreso = data.map(a => ({
-                ...a,
-                progreso: 0
-            }));
-
+            const alumnosConProgreso = data.map(a => ({ ...a, progreso: 0 }));
             setAlumnos(alumnosConProgreso);
 
             // Obtener progreso para cada alumno
             await Promise.all(alumnosConProgreso.map(a => getProgress(a.id)));
 
             setLoading(false);
-
         } catch (err) {
             console.error("Error al obtener alumnos:", err);
             setLoading(false);
         }
     }
 
-    // Obtener progreso de un alumno y actualizar el estado
     async function getProgress(id) {
         try {
             const res = await fetch(`http://127.0.0.1:3000/api/alumnos/progress/${id}`);
             const data = await res.json();
-
-            console.log(data)
 
             setAlumnos(prev =>
                 prev.map(a => a.id === id ? { ...a, progreso: data.alumno } : a)
@@ -48,7 +40,6 @@ export default function Main() {
         }
     }
 
-    // Actualizar sesión sin recargar
     async function updateSession(id) {
         try {
             await fetch(`http://127.0.0.1:3000/api/alumnos/update_sesion/${id}`, {
@@ -71,12 +62,99 @@ export default function Main() {
         }
     }
 
-    // Calcular tiempo desde última sesión
+    async function addAlumno(nombre) {
+        try {
+            const res = await fetch("http://127.0.0.1:3000/api/alumnos/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nombre })
+            });
+            const data = await res.json();
+
+            setAlumnos(prev => [...prev, { ...data, progreso: 0, tiempo_desde_ultima_sesion: { dias:0, horas:0, minutos:0, segundos:0 } }]);
+            getProgress(data.id);
+        } catch (err) {
+            console.error("Error al agregar alumno:", err);
+        }
+    }
+
+    async function editAlumno(id, newName) {
+        try {
+            const res = await fetch(`http://127.0.0.1:3000/api/alumnos/update/${id}/${newName}`, { method: "PUT" });
+            const data = await res.json();
+
+            setAlumnos(prev =>
+                prev.map(a => a.id === id ? { ...a, nombre: data.alumno.nombre } : a)
+            );
+
+            obtenerAlumnos()
+        } catch (err) {
+            console.error("Error al editar alumno:", err);
+        }
+    }
+
+    async function deleteAlumno(id) {
+        try {
+            await fetch(`http://127.0.0.1:3000/api/alumnos/delete/${id}`, { method: "DELETE" });
+            setAlumnos(prev => prev.filter(a => a.id !== id));
+        } catch (err) {
+            console.error("Error al eliminar alumno:", err);
+        }
+    }
+
+    // ------------------ Funciones UI ------------------
+
     function mostrarUltimaSesion(dias, horas, minutos, segundos) {
         if (dias > 0) return `hace ${dias} días`;
         if (horas > 0) return `hace ${horas} horas`;
         if (minutos > 0) return `hace ${minutos} minutos`;
         return "justo ahora";
+    }
+
+    function abrirModalAgregar() {
+        const blackScreen = document.querySelector(".black_screen");
+        const modal = document.querySelector(".addAlumno");
+        blackScreen.classList.add("screen_visible");
+        modal.classList.add("addAlumnoVisible");
+        document.body.style.overflow = "hidden";
+    }
+
+    function abrirModalEditar(nombre, id) {
+        const blackScreen = document.querySelector(".black_screen");
+        const modal = document.querySelector(".editAlumno");
+        const input = document.getElementById("edit_name");
+        const alumnoId = document.getElementById("id_alumno");
+        alumnoId.value = id;
+        input.value = nombre;
+        blackScreen.classList.add("screen_visible");
+        modal.classList.add("addAlumnoVisible");
+        document.body.style.overflow = "hidden";
+    }
+
+    function abrirModalEliminar(id) {
+        const blackScreen = document.querySelector(".black_screen");
+        const modal = document.querySelector(".deleteAlumno");
+        blackScreen.classList.add("screen_visible");
+        modal.classList.add("addAlumnoVisible");
+        modal.innerHTML = `
+            <p>¿Quieres continuar?</p>
+            <p>Se eliminarán todos los datos relacionados</p>
+            <button id="confirmDelete">Eliminar</button>
+        `;
+        document.body.style.overflow = "hidden";
+
+        document.getElementById("confirmDelete").onclick = () => {
+            deleteAlumno(id);
+            cerrarVentanas();
+        };
+    }
+
+    function cerrarVentanas() {
+        document.querySelector(".black_screen").classList.remove("screen_visible");
+        document.querySelector(".addAlumno").classList.remove("addAlumnoVisible");
+        document.querySelector(".editAlumno").classList.remove("addAlumnoVisible");
+        document.querySelector(".deleteAlumno").classList.remove("addAlumnoVisible");
+        document.body.style.overflow = "auto";
     }
 
     useEffect(() => {
@@ -98,42 +176,42 @@ export default function Main() {
                     <p>No hay alumnos inscritos...</p>
                 ) : (
                     <div className="alumnos">
-                        {alumnos.map((alumno) => (
+                        {alumnos.map(alumno => (
                             <div className="alumno" key={alumno.id}>
+                                <div className="alumno__icons">
+                                    <i className="fa-solid fa-pencil edit" onClick={() => abrirModalEditar(alumno.nombre, alumno.id)}></i>
+                                    <i className="fa-solid fa-trash delete" onClick={() => abrirModalEliminar(alumno.id)}></i>
+                                </div>
+
                                 <p className="alumno__nombre">{alumno.nombre}</p>
 
-                                <div className="alumno__progreso" >
-                                    <span>Progreso:</span>
-                                    <div className="progress" style={{position: "relative"}}>
+                                <div className="progress" style={{ position: "relative" }}>
 
-                                        
+
                                         <div
                                             className="progress__fill"
                                             style={{ width: `${alumno.progreso}%` }}
-                                            
+
                                         >
                                             <span style={{
-      position: "absolute",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: "12px",
-      fontWeight: "600",
-      color: "#000" // Cambia según contraste
-    }}>
-      {Math.round(alumno.progreso)}%
-    </span>
+                                                position: "absolute",
+                                                top: 0,
+                                                left: 0,
+                                                width: "100%",
+                                                height: "100%",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                fontSize: "12px",
+                                                fontWeight: "600",
+                                                color: "#000" // Cambia según contraste
+                                            }}>
+                                                {Math.round((alumno.progreso))}%
+                                            </span>
 
                                         </div>
-                                        
-                                    </div>
-                                    
-                                </div>
 
+                                    </div>
                                 <p className="alumno__fecha">
                                     <span>
                                         Última sesión{" "}
@@ -153,6 +231,55 @@ export default function Main() {
                         ))}
                     </div>
                 )}
+
+                <button className="add" onClick={abrirModalAgregar}>+ Agregar alumno</button>
+
+                {/* Modal Agregar */}
+                <div className="addAlumno">
+                    <div className="crossmark">
+                        <p>Añadir alumno</p>
+                        <i className="fa-solid fa-xmark" onClick={cerrarVentanas}></i>
+                        <form onSubmit={e => {
+                            e.preventDefault();
+                            const nombre = document.getElementById("name").value;
+                            if (nombre) {
+                                addAlumno(nombre);
+                                cerrarVentanas();
+                            } else alert("Agrega un nombre");
+                        }}>
+                            <label htmlFor="name">Nombre del alumno:</label>
+                            <input type="text" id="name" />
+                            <button type="submit">Crear alumno</button>
+                        </form>
+                    </div>
+                </div>
+
+                {/* Modal Editar */}
+                <div className="editAlumno">
+                    <div className="crossmark">
+                        <p>Editar alumno</p>
+                        <i className="fa-solid fa-xmark" onClick={cerrarVentanas}></i>
+                        <form onSubmit={e => {
+                            e.preventDefault();
+                            const id = document.getElementById("id_alumno").value;
+                            const newName = document.getElementById("edit_name").value;
+                            if (newName) {
+                                editAlumno(id, newName);
+                                cerrarVentanas();
+                            } else alert("Agrega un nombre");
+                        }}>
+                            <input type="hidden" id="id_alumno" />
+                            <label htmlFor="edit_name">Nombre:</label>
+                            <input type="text" id="edit_name" />
+                            <button type="submit">Editar alumno</button>
+                        </form>
+                    </div>
+                </div>
+
+                {/* Modal Eliminar */}
+                <div className="deleteAlumno"></div>
+
+                <div className="black_screen" onClick={cerrarVentanas}></div>
             </main>
         </>
     );

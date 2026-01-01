@@ -257,12 +257,17 @@ export default function DashboardStudent() {
               )}
 
               {pdfUrl && (
+                <>
                 <iframe
                   src={pdfUrl}
                   width="100%"
                   height="450px"
                   style={{ border: "1px solid #ccc" }}
                 />
+
+                <a target="blank" href={pdfUrl} style={{textAlign: "center"}}>Ver documento completo</a>
+                </>
+                
               )}
 
               {hasExercises && (
