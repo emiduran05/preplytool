@@ -66,44 +66,12 @@ table {
     }
 
 
-    /* Wrapper de imagen con handles */
-.img-box {
-  position: relative;
+    .img-wrapper {
   display: inline-block;
-  max-width: 100%;
-  line-height: 0;
+  position: relative;
+  border: 1px dashed transparent;
 }
 
-/* Imagen base */
-.img-box img.img-resizable {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-
-/* Handles (círculos) */
-.img-box .img-handle {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: #1976d2;
-  border: 2px solid white;
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
-  display: none;
-}
-
-/* Posiciones de los handles */
-.img-box .handle-tl { top: -6px; left: -6px; cursor: nwse-resize; }
-.img-box .handle-tr { top: -6px; right: -6px; cursor: nesw-resize; }
-.img-box .handle-bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
-.img-box .handle-br { bottom: -6px; right: -6px; cursor: nwse-resize; }
-
-/* Estado seleccionado: borde azul y handles visibles */
-.img-box.selected {
-  outline: 2px solid #1976d2;
-  outline-offset: 2px;
-}
-.img-box.selected .img-handle {
-  display: block;
+.img-wrapper:hover {
+  border-color: #1976d2;
 }

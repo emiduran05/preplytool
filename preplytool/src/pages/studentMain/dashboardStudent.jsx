@@ -8,11 +8,8 @@ import { QuillDeltaToHtmlConverter } from "quill-delta-to-html";
 import "./dashboardStudent.css";
 
 /* ================== EJERCICIOS ================== */
-function renderEjerciciosConInputs(delta) {
-  if (!delta) return "";
-
-  const converter = new QuillDeltaToHtmlConverter(delta.ops, {});
-  let html = converter.convert();
+function renderEjerciciosConInputs(html) {
+  if (!html) return "";
 
   let index = 0;
   html = html.replace(/\{([^}]+)\}/g, (_, r) => `
