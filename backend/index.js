@@ -11,7 +11,7 @@ import studentLessonsRoutes from "./routes/studentLessons.routes.js";
 const app = express();
 
 app.use(cors({
-  origin: ["http://localhost:5173", "https://preplytool.vercel.app"], // permite el frontend de Vite
+  origin: ["http://localhost:5173", "https://preplytool.vercel.app", "http://http://38.242.240.22:5173/"], // permite el frontend de Vite
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
