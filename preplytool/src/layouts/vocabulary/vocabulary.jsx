@@ -71,7 +71,7 @@ export default function Vocabulary({ lessonId }) {
     const handleDelete = async (word) => {
         try {
             const response = await fetch(
-                `https://preplytool-2tgl.vercel.app/vocabulario/${lessonId}/${word}`,
+                `https://preplytool-2tgl.vercel.app/api/vocabulario/${lessonId}/${word}`,
                 {
                     method: "DELETE"
                 }
