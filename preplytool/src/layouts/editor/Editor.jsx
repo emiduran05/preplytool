@@ -1,11 +1,11 @@
 // src/layouts/editor/Editor.jsx
 import { useEffect, useRef, useState } from "react";
-import * as Quill from "quill"; // Importar como módulo completo
-import ImageResize from "quill-image-resize-module-react"; // Módulo resize
+import * as Quill from "quill"; // Import completo para evitar readonly issues
+import ImageResize from "quill-image-resize-module-react/dist/QuillImageResizeModule"; // Versión compilada segura
 import "react-quill-new/dist/quill.snow.css";
-import ReactQuill from "react-quill-new"; // Import directo, no lazy
+import ReactQuill from "react-quill-new";
 
-// 🔌 Registramos el módulo de resize ANTES de renderizar
+// Registramos módulo resize ANTES de renderizar
 Quill.register("modules/imageResize", ImageResize);
 
 export default function QuillEditor({ value = "", onSave }) {
@@ -89,8 +89,7 @@ export default function QuillEditor({ value = "", onSave }) {
       ["clean"],
     ],
     imageResize: {
-      parchment: Quill.import("parchment"),
-      modules: ["Resize", "DisplaySize", "Toolbar"],
+      parchment: Quill.import("parchment"), // obligatorio
     },
   };
 
