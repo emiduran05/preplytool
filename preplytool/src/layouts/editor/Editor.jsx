@@ -1,18 +1,23 @@
 // src/layouts/editor/Editor.jsx
 import { useEffect, useRef, useState } from "react";
-import * as Quill from "quill"; // Import completo para evitar readonly issues
-import ImageResize from "quill-image-resize-module-react/dist/QuillImageResizeModule"; // Versión compilada segura
-import "react-quill-new/dist/quill.snow.css";
 import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 
-// Registramos módulo resize ANTES de renderizar
-Quill.register("modules/imageResize", ImageResize);
+let Quill;
+let ImageResize;
+
+// ✅ Registramos ImageResize SOLO en cliente
+if (typeof window !== "undefined") {
+  Quill = require("quill");
+  ImageResize = require("quill-image-resize-module-react").default;
+  Quill.register("modules/imageResize", ImageResize);
+}
 
 export default function QuillEditor({ value = "", onSave }) {
   const quillRef = useRef(null);
   const [internalValue, setInternalValue] = useState(value);
 
-  // Tablas
+  // Tabla
   const [rows, setRows] = useState(2);
   const [cols, setCols] = useState(2);
   const [tableWidth, setTableWidth] = useState("100%");
@@ -78,6 +83,7 @@ export default function QuillEditor({ value = "", onSave }) {
     onSave?.(editor.root.innerHTML);
   };
 
+  // ⚡ Solo pasar Quill si estamos en cliente
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, false] }],
@@ -88,9 +94,9 @@ export default function QuillEditor({ value = "", onSave }) {
       [{ color: [] }, { background: [] }],
       ["clean"],
     ],
-    imageResize: {
-      parchment: Quill.import("parchment"), // obligatorio
-    },
+    ...(typeof window !== "undefined" && Quill
+      ? { imageResize: { parchment: Quill.import("parchment") } }
+      : {}),
   };
 
   return (
