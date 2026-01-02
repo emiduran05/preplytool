@@ -43,7 +43,8 @@ getProgress: async (userData) => {
             COALESCE((COUNT(sl.student_id) * 100.0 / COUNT(l.id)), 0) AS progreso
         FROM lecciones l
         LEFT JOIN student_lessons sl 
-            ON l.id = sl.lesson_id AND sl.student_id = $1;
+            ON l.id = sl.lesson_id AND sl.student_id = $1 AND sl.completed = true;
+
     `, [id]);
 
     return result.rows[0].progreso; // devuelve solo el número
