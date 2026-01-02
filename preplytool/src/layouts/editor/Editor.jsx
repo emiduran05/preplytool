@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState, Suspense, lazy } from "react";
-import Quill from "quill";
-import ImageResize from "quill-image-resize-module-react";
+// src/layouts/editor/Editor.jsx
+import { useEffect, useRef, useState } from "react";
+import * as Quill from "quill"; // Importar como módulo completo
+import ImageResize from "quill-image-resize-module-react"; // Módulo resize
 import "react-quill-new/dist/quill.snow.css";
+import ReactQuill from "react-quill-new"; // Import directo, no lazy
 
-const ReactQuill = lazy(() => import("react-quill-new"));
-
-// Registramos el módulo de resize
+// 🔌 Registramos el módulo de resize ANTES de renderizar
 Quill.register("modules/imageResize", ImageResize);
 
 export default function QuillEditor({ value = "", onSave }) {
@@ -25,6 +25,7 @@ export default function QuillEditor({ value = "", onSave }) {
 
   const getEditor = () => quillRef.current?.getEditor();
 
+  // Construye tabla HTML manualmente
   const buildTableHTML = () => {
     const borderStyle = borders ? "1px solid #ccc" : "none";
     const marginStyle = centered ? "0 auto" : "0";
@@ -89,7 +90,7 @@ export default function QuillEditor({ value = "", onSave }) {
     ],
     imageResize: {
       parchment: Quill.import("parchment"),
-      modules: ["Resize", "DisplaySize", "Toolbar"], // esto hace que funcione el resize
+      modules: ["Resize", "DisplaySize", "Toolbar"],
     },
   };
 
@@ -129,16 +130,14 @@ export default function QuillEditor({ value = "", onSave }) {
         <button onClick={applyTableStyles}>Aplicar estilos</button>
       </div>
 
-      <Suspense fallback={<div>Cargando editor...</div>}>
-        <ReactQuill
-          ref={quillRef}
-          theme="snow"
-          value={internalValue}
-          onChange={setInternalValue}
-          modules={modules}
-          style={{ height: 320, marginBottom: 60 }}
-        />
-      </Suspense>
+      <ReactQuill
+        ref={quillRef}
+        theme="snow"
+        value={internalValue}
+        onChange={setInternalValue}
+        modules={modules}
+        style={{ height: 320, marginBottom: 60 }}
+      />
 
       <button
         onClick={handleSave}
