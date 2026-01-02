@@ -1,23 +1,18 @@
-// src/layouts/editor/Editor.jsx
-import { useEffect, useRef, useState } from "react";
-import ReactQuill from "react-quill-new";
+import { useEffect, useRef, useState, Suspense, lazy } from "react";
+import Quill from "quill";
+import ImageResize from "quill-image-resize-module-react";
 import "react-quill-new/dist/quill.snow.css";
 
-let Quill;
-let ImageResize;
+const ReactQuill = lazy(() => import("react-quill-new"));
 
-// ✅ Registramos ImageResize SOLO en cliente
-if (typeof window !== "undefined") {
-  Quill = require("quill");
-  ImageResize = require("quill-image-resize-module-react").default;
-  Quill.register("modules/imageResize", ImageResize);
-}
+// Registramos el módulo de resize
+Quill.register("modules/imageResize", ImageResize);
 
 export default function QuillEditor({ value = "", onSave }) {
   const quillRef = useRef(null);
   const [internalValue, setInternalValue] = useState(value);
 
-  // Tabla
+  // Tablas
   const [rows, setRows] = useState(2);
   const [cols, setCols] = useState(2);
   const [tableWidth, setTableWidth] = useState("100%");
@@ -30,7 +25,6 @@ export default function QuillEditor({ value = "", onSave }) {
 
   const getEditor = () => quillRef.current?.getEditor();
 
-  // Construye tabla HTML manualmente
   const buildTableHTML = () => {
     const borderStyle = borders ? "1px solid #ccc" : "none";
     const marginStyle = centered ? "0 auto" : "0";
@@ -83,7 +77,6 @@ export default function QuillEditor({ value = "", onSave }) {
     onSave?.(editor.root.innerHTML);
   };
 
-  // ⚡ Solo pasar Quill si estamos en cliente
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, false] }],
@@ -94,9 +87,10 @@ export default function QuillEditor({ value = "", onSave }) {
       [{ color: [] }, { background: [] }],
       ["clean"],
     ],
-    ...(typeof window !== "undefined" && Quill
-      ? { imageResize: { parchment: Quill.import("parchment") } }
-      : {}),
+    imageResize: {
+      parchment: Quill.import("parchment"),
+      modules: ["Resize", "DisplaySize", "Toolbar"], // esto hace que funcione el resize
+    },
   };
 
   return (
@@ -135,14 +129,16 @@ export default function QuillEditor({ value = "", onSave }) {
         <button onClick={applyTableStyles}>Aplicar estilos</button>
       </div>
 
-      <ReactQuill
-        ref={quillRef}
-        theme="snow"
-        value={internalValue}
-        onChange={setInternalValue}
-        modules={modules}
-        style={{ height: 320, marginBottom: 60 }}
-      />
+      <Suspense fallback={<div>Cargando editor...</div>}>
+        <ReactQuill
+          ref={quillRef}
+          theme="snow"
+          value={internalValue}
+          onChange={setInternalValue}
+          modules={modules}
+          style={{ height: 320, marginBottom: 60 }}
+        />
+      </Suspense>
 
       <button
         onClick={handleSave}
