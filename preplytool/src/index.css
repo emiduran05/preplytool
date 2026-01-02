@@ -32,8 +32,18 @@ table {
  
 }
 
+table{
+    width: 80% !important;
+    margin: 0 auto;
+    td{
+    padding: 5px;
+    border: 1px solid #ddd;
+    padding: 10px;
+  }
+}
+
 .ql-editor table{
-    width: 100% !important;
+    width: 80% !important;
      td{
     padding: 5px;
     border: 1px solid #ddd;
