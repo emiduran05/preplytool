@@ -21,68 +21,83 @@ export default function Aside({ onSelect }) {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
     async function fetchLevelsData() {
-        await fetch(`https://preplytool-2tgl.vercel.app/api/services/nivel/niveles/completos`)
-            .then(res => res.json())
-            .then(data => {
+        await fetch(
+            `https://preplytool-2tgl.vercel.app/api/services/nivel/niveles/completos`
+        )
+            .then((res) => res.json())
+            .then((data) => {
                 setLevelsData(data);
                 setIsloading(false);
             })
-            .catch(err => console.error("Error:", err));
+            .catch((err) => console.error("Error:", err));
     }
 
     // --- POST Requests ---
     async function postLevel(name) {
-        return fetch("https://preplytool-2tgl.vercel.app/api/services/nivel/create", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ nombre: name })
-        });
+        return fetch(
+            "https://preplytool-2tgl.vercel.app/api/services/nivel/create",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nombre: name }),
+            }
+        );
     }
 
     async function postStage(name, nivelId) {
-        return fetch("https://preplytool-2tgl.vercel.app/api/services/etapa/create", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ nombre: name, nivel_id: nivelId })
-        });
+        return fetch(
+            "https://preplytool-2tgl.vercel.app/api/services/etapa/create",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nombre: name, nivel_id: nivelId }),
+            }
+        );
     }
 
     async function postLesson(name, etapaId) {
-        return fetch("https://preplytool-2tgl.vercel.app/api/services/leccion/create", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ nombre: name, etapa_id: etapaId })
-        });
+        return fetch(
+            "https://preplytool-2tgl.vercel.app/api/services/leccion/create",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nombre: name, etapa_id: etapaId }),
+            }
+        );
     }
 
     // -------- EDIT REQUEST --------
-   async function postEdit(type, id, name) {
+    async function postEdit(type, id, name) {
+        const response = await fetch(
+            `https://preplytool-2tgl.vercel.app/api/services/${type}/update`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nombre: name, id: id }),
+            }
+        );
 
-    const response = await fetch(`https://preplytool-2tgl.vercel.app/api/services/${type}/update`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: name, id: id })
-    });
+        // Si no hay cuerpo:
+        if (!response.ok) throw new Error("Error en el servidor");
 
-    // Si no hay cuerpo:
-    if (!response.ok) throw new Error("Error en el servidor");
+        const data = await response.json().catch(() => null);
 
-    const data = await response.json().catch(() => null);
-
-    console.log("Edit result:", data);
-    return data;
-}
-
+        console.log("Edit result:", data);
+        return data;
+    }
 
     // -------- DELETE REQUEST --------
     async function postDelete(type, id) {
-        return fetch(`https://preplytool-2tgl.vercel.app/api/services/${type}/delete`, {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                id: id
-            })
-        });
+        return fetch(
+            `https://preplytool-2tgl.vercel.app/api/services/${type}/delete`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: id,
+                }),
+            }
+        );
     }
 
     useEffect(() => {
@@ -126,7 +141,7 @@ export default function Aside({ onSelect }) {
         e.preventDefault();
         if (!inputValue.trim()) return;
 
-        await postEdit(selectedItem.type, selectedItem.id, inputValue)
+        await postEdit(selectedItem.type, selectedItem.id, inputValue);
         setEditModalOpen(false);
         fetchLevelsData();
     }
@@ -139,13 +154,9 @@ export default function Aside({ onSelect }) {
 
     return (
         <div className="aside_container">
-
             {/* BOTÓN AGREGAR NIVEL */}
             {!isloading && openLevel === null && (
-                <button
-                    className="add_btn_global"
-                    onClick={() => openModal("nivel")}
-                >
+                <button className="add_btn_global" onClick={() => openModal("nivel")}>
                     + Agregar Nivel
                 </button>
             )}
@@ -160,7 +171,9 @@ export default function Aside({ onSelect }) {
                                     setOpenLevel(openLevel === level.id ? null : level.id)
                                 }
                             >
-                                <span className={`arrow ${openLevel === level.id ? "open" : ""}`}>
+                                <span
+                                    className={`arrow ${openLevel === level.id ? "open" : ""}`}
+                                >
                                     <i className="fa-solid fa-caret-right"></i>
                                 </span>
                             </button>
@@ -184,7 +197,6 @@ export default function Aside({ onSelect }) {
                     {/* ETAPAS */}
                     {openLevel === level.id && (
                         <div className="stage_block">
-
                             {level.stages.map((stage) => (
                                 <div key={stage.id}>
                                     <div className="row">
@@ -195,7 +207,10 @@ export default function Aside({ onSelect }) {
                                                     setOpenStage(openStage === stage.id ? null : stage.id)
                                                 }
                                             >
-                                                <span className={`arrow ${openStage === stage.id ? "open" : ""}`}>
+                                                <span
+                                                    className={`arrow ${openStage === stage.id ? "open" : ""
+                                                        }`}
+                                                >
                                                     <i className="fa-solid fa-caret-right"></i>
                                                 </span>
                                             </button>
@@ -221,11 +236,21 @@ export default function Aside({ onSelect }) {
                                         <div className="lesson_block">
                                             {stage.lessons.map((lesson) => (
                                                 <div key={lesson.id} className="row lesson_row">
-                                                    <p onClick={() => onSelect(`${lesson.id}`)}>{lesson.name}</p>
-
                                                     <div>
+                                                        <p
+                                                            style={{ display: "inline-block", marginRight: "20px" }}
+                                                            onClick={() => onSelect(`${lesson.id}`)}
+                                                        >
+                                                            {lesson.name   }   
+                                                            <span style={{marginLeft: "10px"}}><i
+                                                            className="fa-solid fa-pencil edit"
+                                                            onClick={() => openEditModal("leccion", lesson)}
+                                                        ></i></span>
+                                                        </p>
+
                                                         
                                                     </div>
+
                                                 </div>
                                             ))}
 
@@ -266,8 +291,16 @@ export default function Aside({ onSelect }) {
                             />
 
                             <div className="modal_actions">
-                                <button type="button" onClick={() => setModalOpen(false)} className="cancel_button">Cancelar</button>
-                                <button type="submit" className="confirm_btn">Crear</button>
+                                <button
+                                    type="button"
+                                    onClick={() => setModalOpen(false)}
+                                    className="cancel_button"
+                                >
+                                    Cancelar
+                                </button>
+                                <button type="submit" className="confirm_btn">
+                                    Crear
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -288,8 +321,16 @@ export default function Aside({ onSelect }) {
                             />
 
                             <div className="modal_actions">
-                                <button type="button" onClick={() => setEditModalOpen(false)} className="cancel_button">Cancelar</button>
-                                <button type="submit" className="confirm_btn">Guardar</button>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditModalOpen(false)}
+                                    className="cancel_button"
+                                >
+                                    Cancelar
+                                </button>
+                                <button type="submit" className="confirm_btn">
+                                    Guardar
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -304,7 +345,7 @@ export default function Aside({ onSelect }) {
                         <p>Se eliminará permanentemente y todos sus datos relaiconados.</p>
 
                         <div className="modal_actions cancel_button">
-                            <button type="button" onClick={() => setDeleteModalOpen(false)} >
+                            <button type="button" onClick={() => setDeleteModalOpen(false)}>
                                 Cancelar
                             </button>
 
@@ -315,7 +356,6 @@ export default function Aside({ onSelect }) {
                     </div>
                 </div>
             )}
-
         </div>
     );
 }
