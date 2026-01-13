@@ -3,10 +3,10 @@ import pool from "../config/db.js";
 const leccionesModel = {
 
   // EXISTENTES 👇
-  createLeccion: async ({ nombre, etapa_id }) => {
+  createLeccion: async ({ nombre, etapa_id, orden_leccion }) => {
     const result = await pool.query(
-      "INSERT INTO lecciones (nombre, etapa_id) VALUES ($1, $2) RETURNING *;",
-      [nombre, etapa_id]
+      "INSERT INTO lecciones (nombre, etapa_id, orden_leccion) VALUES ($1, $2, $3) RETURNING *;",
+      [nombre, etapa_id, orden_leccion]
     );
     return result.rows[0];
   },

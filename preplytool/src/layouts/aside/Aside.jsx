@@ -11,12 +11,12 @@ export default function Aside({ onSelect }) {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalType, setModalType] = useState("");
     const [inputValue, setInputValue] = useState("");
+    const [ordenLeccion, setOrdenLeccion] = useState("");
     const [targetId, setTargetId] = useState(null);
 
     // --- Edit Modal ---
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
-    const [ordenLeccion, setOrdenLeccion] = useState("");
 
     // --- Delete Warning Modal ---
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -51,11 +51,15 @@ export default function Aside({ onSelect }) {
         });
     }
 
-    async function postLesson(name, etapaId) {
+    async function postLesson(name, etapaId, ordenLeccion) {
         return fetch("https://preplytool-2tgl.vercel.app/api/services/leccion/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre: name, etapa_id: etapaId }),
+            body: JSON.stringify({
+                nombre: name,
+                etapa_id: etapaId,
+                orden_leccion: Number(ordenLeccion),
+            }),
         });
     }
 
@@ -101,6 +105,7 @@ export default function Aside({ onSelect }) {
         setModalType(type);
         setTargetId(id);
         setInputValue("");
+        setOrdenLeccion("");
         setModalOpen(true);
     }
 
@@ -122,7 +127,8 @@ export default function Aside({ onSelect }) {
 
         if (modalType === "nivel") await postLevel(inputValue);
         if (modalType === "etapa") await postStage(inputValue, targetId);
-        if (modalType === "leccion") await postLesson(inputValue, targetId);
+        if (modalType === "leccion")
+            await postLesson(inputValue, targetId, ordenLeccion);
 
         setModalOpen(false);
         fetchLevelsData();
@@ -282,6 +288,17 @@ export default function Aside({ onSelect }) {
                                 onChange={(e) => setInputValue(e.target.value)}
                                 placeholder={`Nombre de ${modalType}`}
                             />
+
+                            {modalType === "leccion" && (
+                                <input
+                                    type="number"
+                                    value={ordenLeccion}
+                                    onChange={(e) => setOrdenLeccion(e.target.value)}
+                                    placeholder="Orden de la lección"
+                                    style={{ marginTop: "10px" }}
+                                />
+                            )}
+
                             <div className="modal_actions">
                                 <button type="button" onClick={() => setModalOpen(false)}>
                                     Cancelar
