@@ -11,13 +11,21 @@ const leccionesModel = {
     return result.rows[0];
   },
 
-  updateLeccion: async ({ nombre, id }) => {
-    const result = await pool.query(
-      "UPDATE lecciones SET nombre = $1 WHERE id = $2 RETURNING *;",
-      [nombre, id]
-    );
-    return result.rows[0];
-  },
+  updateLeccion: async ({ nombre, orden_leccion, id }) => {
+  const result = await pool.query(
+    `
+    UPDATE lecciones
+    SET nombre = $1,
+        orden_leccion = $2
+    WHERE id = $3
+    RETURNING *;
+    `,
+    [nombre, orden_leccion, id]
+  );
+
+  return result.rows[0];
+},
+
 
   deleteLeccion: async ({ id }) => {
     await pool.query("DELETE FROM lecciones WHERE id = $1", [id]);
