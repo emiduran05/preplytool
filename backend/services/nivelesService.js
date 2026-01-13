@@ -6,14 +6,15 @@ export const getNivelesCompletosService = async (student_id) => {
         SELECT 
             n.id AS nivel_id, n.nombre AS nivel_nombre,
             e.id AS etapa_id, e.nombre AS etapa_nombre,
-            l.id AS leccion_id, l.nombre AS leccion_nombre
+            l.id AS leccion_id, l.orden_leccion AS orden
         FROM niveles n
         LEFT JOIN etapas e ON e.nivel_id = n.id
         LEFT JOIN lecciones l ON l.etapa_id = e.id
         ORDER BY 
             LOWER(n.nombre) ASC,
             LOWER(e.nombre) ASC,
-            LOWER(l.nombre) ASC;
+            l.orden_leccion ASC;
+
     `);
 
     const rows = result.rows;

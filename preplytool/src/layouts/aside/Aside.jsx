@@ -7,22 +7,21 @@ export default function Aside({ onSelect }) {
     const [openLevel, setOpenLevel] = useState(null);
     const [openStage, setOpenStage] = useState(null);
 
-    // --- CREATE MODAL ---
+    // --- Creation Modal ---
     const [modalOpen, setModalOpen] = useState(false);
     const [modalType, setModalType] = useState("");
     const [inputValue, setInputValue] = useState("");
     const [targetId, setTargetId] = useState(null);
     const [ordenLeccionCreate, setOrdenLeccionCreate] = useState("");
 
-    // --- EDIT MODAL ---
+    // --- Edit Modal ---
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [ordenLeccionEdit, setOrdenLeccionEdit] = useState("");
 
-    // --- DELETE MODAL ---
+    // --- Delete Modal ---
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-    // ---------- FETCH ----------
     async function fetchLevelsData() {
         try {
             const res = await fetch(
@@ -54,15 +53,25 @@ export default function Aside({ onSelect }) {
     }
 
     async function postLesson(name, etapaId, ordenLeccion) {
-        return fetch("https://preplytool-2tgl.vercel.app/api/services/leccion/create", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                nombre: name,
-                etapa_id: etapaId,
-                orden_leccion: Number(ordenLeccion),
-            }),
+        console.log("🟢 FRONT CREATE LECCION:", {
+            name,
+            etapaId,
+            ordenLeccion,
+            type: typeof ordenLeccion,
         });
+
+        return fetch(
+            "https://preplytool-2tgl.vercel.app/api/services/leccion/create",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nombre: name,
+                    etapa_id: etapaId,
+                    orden_leccion: ordenLeccion,
+                }),
+            }
+        );
     }
 
     // ---------- EDIT ----------
@@ -70,10 +79,12 @@ export default function Aside({ onSelect }) {
         const body = { id, nombre: name };
 
         if (type === "leccion") {
-            body.orden_leccion = Number(ordenLeccion);
+            body.orden_leccion = ordenLeccion;
         }
 
-        const response = await fetch(
+        console.log("🟢 FRONT UPDATE:", body);
+
+        return fetch(
             `https://preplytool-2tgl.vercel.app/api/services/${type}/update`,
             {
                 method: "POST",
@@ -81,9 +92,6 @@ export default function Aside({ onSelect }) {
                 body: JSON.stringify(body),
             }
         );
-
-        if (!response.ok) throw new Error("Error en el servidor");
-        return response.json();
     }
 
     // ---------- DELETE ----------
@@ -114,7 +122,7 @@ export default function Aside({ onSelect }) {
     function openEditModal(type, item) {
         setSelectedItem({ ...item, type });
         setInputValue(item.name || "");
-        setOrdenLeccionEdit(item.orden_leccion ?? "");
+        setOrdenLeccionEdit(item.orden ?? "");
         setEditModalOpen(true);
     }
 
@@ -131,7 +139,16 @@ export default function Aside({ onSelect }) {
         if (modalType === "etapa") await postStage(inputValue, targetId);
 
         if (modalType === "leccion") {
-            await postLesson(inputValue, targetId, ordenLeccionCreate);
+            if (ordenLeccionCreate === "") {
+                alert("Debes indicar el orden de la lección");
+                return;
+            }
+
+            await postLesson(
+                inputValue,
+                targetId,
+                Number(ordenLeccionCreate)
+            );
         }
 
         setModalOpen(false);
@@ -146,7 +163,9 @@ export default function Aside({ onSelect }) {
             selectedItem.type,
             selectedItem.id,
             inputValue,
-            ordenLeccionEdit
+            selectedItem.type === "leccion"
+                ? Number(ordenLeccionEdit)
+                : undefined
         );
 
         setEditModalOpen(false);
@@ -159,7 +178,6 @@ export default function Aside({ onSelect }) {
         fetchLevelsData();
     }
 
-    // ---------- RENDER ----------
     return (
         <div className="aside_container">
             {!isloading && openLevel === null && (
@@ -178,7 +196,9 @@ export default function Aside({ onSelect }) {
                                     setOpenLevel(openLevel === level.id ? null : level.id)
                                 }
                             >
-                                <span className={`arrow ${openLevel === level.id ? "open" : ""}`}>
+                                <span
+                                    className={`arrow ${openLevel === level.id ? "open" : ""}`}
+                                >
                                     <i className="fa-solid fa-caret-right"></i>
                                 </span>
                             </button>
@@ -190,6 +210,7 @@ export default function Aside({ onSelect }) {
                                     className="fa-solid fa-pencil edit"
                                     onClick={() => openEditModal("nivel", level)}
                                 ></i>
+
                                 <i
                                     className="fa-solid fa-trash delete"
                                     onClick={() => openDeleteModal("nivel", level)}
@@ -212,7 +233,11 @@ export default function Aside({ onSelect }) {
                                                     )
                                                 }
                                             >
-                                                <span className={`arrow ${openStage === stage.id ? "open" : ""}`}>
+                                                <span
+                                                    className={`arrow ${
+                                                        openStage === stage.id ? "open" : ""
+                                                    }`}
+                                                >
                                                     <i className="fa-solid fa-caret-right"></i>
                                                 </span>
                                             </button>
@@ -224,6 +249,7 @@ export default function Aside({ onSelect }) {
                                                     className="fa-solid fa-pencil edit"
                                                     onClick={() => openEditModal("etapa", stage)}
                                                 ></i>
+
                                                 <i
                                                     className="fa-solid fa-trash delete"
                                                     onClick={() => openDeleteModal("etapa", stage)}
@@ -237,15 +263,21 @@ export default function Aside({ onSelect }) {
                                             {stage.lessons.map((lesson) => (
                                                 <div key={lesson.id} className="row lesson_row">
                                                     <p
+                                                        style={{
+                                                            display: "inline-block",
+                                                            marginRight: "20px",
+                                                        }}
                                                         onClick={() => onSelect(`${lesson.id}`)}
-                                                        style={{ cursor: "pointer" }}
                                                     >
                                                         {lesson.name} (#{lesson.orden_leccion})
-                                                        <i
-                                                            className="fa-solid fa-pencil edit"
-                                                            style={{ marginLeft: "10px" }}
-                                                            onClick={() => openEditModal("leccion", lesson)}
-                                                        ></i>
+                                                        <span style={{ marginLeft: "10px" }}>
+                                                            <i
+                                                                className="fa-solid fa-pencil edit"
+                                                                onClick={() =>
+                                                                    openEditModal("leccion", lesson)
+                                                                }
+                                                            ></i>
+                                                        </span>
                                                     </p>
                                                 </div>
                                             ))}
@@ -272,7 +304,7 @@ export default function Aside({ onSelect }) {
                 </div>
             ))}
 
-            {/* ---------- MODAL CREAR ---------- */}
+            {/* -------- MODAL CREAR -------- */}
             {modalOpen && (
                 <div className="modal_overlay">
                     <div className="modal">
@@ -281,7 +313,7 @@ export default function Aside({ onSelect }) {
                         <form onSubmit={handleCreate}>
                             <input
                                 type="text"
-                                placeholder="Nombre"
+                                placeholder={`Nombre de ${modalType}`}
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                             />
@@ -291,23 +323,30 @@ export default function Aside({ onSelect }) {
                                     type="number"
                                     placeholder="Orden de la lección"
                                     value={ordenLeccionCreate}
-                                    onChange={(e) => setOrdenLeccionCreate(e.target.value)}
-                                    style={{ marginTop: "10px" }}
+                                    onChange={(e) =>
+                                        setOrdenLeccionCreate(e.target.value)
+                                    }
                                 />
                             )}
 
                             <div className="modal_actions">
-                                <button type="button" onClick={() => setModalOpen(false)}>
+                                <button
+                                    type="button"
+                                    onClick={() => setModalOpen(false)}
+                                    className="cancel_button"
+                                >
                                     Cancelar
                                 </button>
-                                <button type="submit">Crear</button>
+                                <button type="submit" className="confirm_btn">
+                                    Crear
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* ---------- MODAL EDITAR ---------- */}
+            {/* -------- MODAL EDITAR -------- */}
             {editModalOpen && (
                 <div className="modal_overlay">
                     <div className="modal">
@@ -318,39 +357,47 @@ export default function Aside({ onSelect }) {
                                 type="text"
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
-                                placeholder="Nombre"
                             />
 
                             {selectedItem.type === "leccion" && (
                                 <input
                                     type="number"
                                     value={ordenLeccionEdit}
-                                    onChange={(e) => setOrdenLeccionEdit(e.target.value)}
+                                    onChange={(e) =>
+                                        setOrdenLeccionEdit(e.target.value)
+                                    }
                                     placeholder="Orden de la lección"
-                                    style={{ marginTop: "10px" }}
                                 />
                             )}
 
                             <div className="modal_actions">
-                                <button type="button" onClick={() => setEditModalOpen(false)}>
+                                <button
+                                    type="button"
+                                    onClick={() => setEditModalOpen(false)}
+                                    className="cancel_button"
+                                >
                                     Cancelar
                                 </button>
-                                <button type="submit">Guardar</button>
+                                <button type="submit" className="confirm_btn">
+                                    Guardar
+                                </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* ---------- MODAL DELETE ---------- */}
+            {/* -------- MODAL DELETE -------- */}
             {deleteModalOpen && (
                 <div className="modal_overlay">
                     <div className="modal warning">
                         <h3>¿Eliminar {selectedItem.type}?</h3>
-                        <p>Esta acción no se puede deshacer.</p>
+                        <p>Se eliminará permanentemente y todos sus datos relacionados.</p>
 
-                        <div className="modal_actions">
-                            <button onClick={() => setDeleteModalOpen(false)}>Cancelar</button>
+                        <div className="modal_actions cancel_button">
+                            <button onClick={() => setDeleteModalOpen(false)}>
+                                Cancelar
+                            </button>
                             <button onClick={handleDelete}>Eliminar</button>
                         </div>
                     </div>
