@@ -5,7 +5,7 @@ const router = express.Router();
 
 // ESPECÍFICAS
 router.post("/create", LeccionesController.createLecciones);
-router.put("/update", LeccionesController.updateLecciones);
+router.post("/update", LeccionesController.updateLecciones);
 router.delete("/delete", LeccionesController.deleteLeccion);
 
 router.put("/contenido", LeccionesController.updateContenido);
