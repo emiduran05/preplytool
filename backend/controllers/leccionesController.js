@@ -6,7 +6,7 @@ const LeccionesController = {
 
   createLecciones: async (req, res) => {
     try {
-      const { nombre, etapa_id, ruta_pdf } = req.body;
+      const { nombre, etapa_id, orden_leccion, ruta_pdf } = req.body;
 
       if (!nombre) {
         return res.status(400).json({ error: "Falta el nombre" });
@@ -15,6 +15,7 @@ const LeccionesController = {
       const newLeccion = await leccionesModel.createLeccion({
         nombre,
         etapa_id,
+        orden_leccion,
         ruta_pdf
       });
 
@@ -28,7 +29,7 @@ const LeccionesController = {
 
   updateLecciones: async (req, res) => {
     try {
-      const { nombre, id, ruta_pdf } = req.body;
+      const { nombre, id, orden_leccion, ruta_pdf } = req.body;
 
       if (!id) {
         return res.status(400).json({ error: "Falta el id" });
@@ -37,6 +38,7 @@ const LeccionesController = {
       const updatedLeccion = await leccionesModel.updateLeccion({
         nombre,
         id,
+        orden_leccion,
         ruta_pdf
       });
 

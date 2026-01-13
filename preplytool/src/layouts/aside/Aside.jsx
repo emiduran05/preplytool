@@ -7,20 +7,22 @@ export default function Aside({ onSelect }) {
     const [openLevel, setOpenLevel] = useState(null);
     const [openStage, setOpenStage] = useState(null);
 
-    // --- Creation Modal ---
+    // --- CREATE MODAL ---
     const [modalOpen, setModalOpen] = useState(false);
     const [modalType, setModalType] = useState("");
     const [inputValue, setInputValue] = useState("");
-    const [ordenLeccion, setOrdenLeccion] = useState("");
     const [targetId, setTargetId] = useState(null);
+    const [ordenLeccionCreate, setOrdenLeccionCreate] = useState("");
 
-    // --- Edit Modal ---
+    // --- EDIT MODAL ---
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
+    const [ordenLeccionEdit, setOrdenLeccionEdit] = useState("");
 
-    // --- Delete Warning Modal ---
+    // --- DELETE MODAL ---
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
+    // ---------- FETCH ----------
     async function fetchLevelsData() {
         try {
             const res = await fetch(
@@ -105,14 +107,14 @@ export default function Aside({ onSelect }) {
         setModalType(type);
         setTargetId(id);
         setInputValue("");
-        setOrdenLeccion("");
+        setOrdenLeccionCreate("");
         setModalOpen(true);
     }
 
     function openEditModal(type, item) {
         setSelectedItem({ ...item, type });
         setInputValue(item.name || "");
-        setOrdenLeccion(item.orden ?? "");
+        setOrdenLeccionEdit(item.orden_leccion ?? "");
         setEditModalOpen(true);
     }
 
@@ -127,8 +129,10 @@ export default function Aside({ onSelect }) {
 
         if (modalType === "nivel") await postLevel(inputValue);
         if (modalType === "etapa") await postStage(inputValue, targetId);
-        if (modalType === "leccion")
-            await postLesson(inputValue, targetId, ordenLeccion);
+
+        if (modalType === "leccion") {
+            await postLesson(inputValue, targetId, ordenLeccionCreate);
+        }
 
         setModalOpen(false);
         fetchLevelsData();
@@ -142,7 +146,7 @@ export default function Aside({ onSelect }) {
             selectedItem.type,
             selectedItem.id,
             inputValue,
-            ordenLeccion
+            ordenLeccionEdit
         );
 
         setEditModalOpen(false);
@@ -174,9 +178,7 @@ export default function Aside({ onSelect }) {
                                     setOpenLevel(openLevel === level.id ? null : level.id)
                                 }
                             >
-                                <span
-                                    className={`arrow ${openLevel === level.id ? "open" : ""}`}
-                                >
+                                <span className={`arrow ${openLevel === level.id ? "open" : ""}`}>
                                     <i className="fa-solid fa-caret-right"></i>
                                 </span>
                             </button>
@@ -210,11 +212,7 @@ export default function Aside({ onSelect }) {
                                                     )
                                                 }
                                             >
-                                                <span
-                                                    className={`arrow ${
-                                                        openStage === stage.id ? "open" : ""
-                                                    }`}
-                                                >
+                                                <span className={`arrow ${openStage === stage.id ? "open" : ""}`}>
                                                     <i className="fa-solid fa-caret-right"></i>
                                                 </span>
                                             </button>
@@ -246,9 +244,7 @@ export default function Aside({ onSelect }) {
                                                         <i
                                                             className="fa-solid fa-pencil edit"
                                                             style={{ marginLeft: "10px" }}
-                                                            onClick={() =>
-                                                                openEditModal("leccion", lesson)
-                                                            }
+                                                            onClick={() => openEditModal("leccion", lesson)}
                                                         ></i>
                                                     </p>
                                                 </div>
@@ -281,20 +277,21 @@ export default function Aside({ onSelect }) {
                 <div className="modal_overlay">
                     <div className="modal">
                         <h3>Agregar {modalType}</h3>
+
                         <form onSubmit={handleCreate}>
                             <input
                                 type="text"
+                                placeholder="Nombre"
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
-                                placeholder={`Nombre de ${modalType}`}
                             />
 
                             {modalType === "leccion" && (
                                 <input
                                     type="number"
-                                    value={ordenLeccion}
-                                    onChange={(e) => setOrdenLeccion(e.target.value)}
                                     placeholder="Orden de la lección"
+                                    value={ordenLeccionCreate}
+                                    onChange={(e) => setOrdenLeccionCreate(e.target.value)}
                                     style={{ marginTop: "10px" }}
                                 />
                             )}
@@ -315,6 +312,7 @@ export default function Aside({ onSelect }) {
                 <div className="modal_overlay">
                     <div className="modal">
                         <h3>Editar {selectedItem.type}</h3>
+
                         <form onSubmit={handleEdit}>
                             <input
                                 type="text"
@@ -326,8 +324,8 @@ export default function Aside({ onSelect }) {
                             {selectedItem.type === "leccion" && (
                                 <input
                                     type="number"
-                                    value={ordenLeccion}
-                                    onChange={(e) => setOrdenLeccion(e.target.value)}
+                                    value={ordenLeccionEdit}
+                                    onChange={(e) => setOrdenLeccionEdit(e.target.value)}
                                     placeholder="Orden de la lección"
                                     style={{ marginTop: "10px" }}
                                 />
@@ -350,6 +348,7 @@ export default function Aside({ onSelect }) {
                     <div className="modal warning">
                         <h3>¿Eliminar {selectedItem.type}?</h3>
                         <p>Esta acción no se puede deshacer.</p>
+
                         <div className="modal_actions">
                             <button onClick={() => setDeleteModalOpen(false)}>Cancelar</button>
                             <button onClick={handleDelete}>Eliminar</button>
