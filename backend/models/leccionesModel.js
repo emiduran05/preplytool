@@ -3,13 +3,26 @@ import pool from "../config/db.js";
 const leccionesModel = {
 
   // EXISTENTES 👇
-  createLeccion: async ({ nombre, etapa_id, orden_leccion }) => {
-    const result = await pool.query(
-      "INSERT INTO lecciones (nombre, etapa_id, orden_leccion) VALUES ($1, $2, $3) RETURNING *;",
-      [nombre, etapa_id, orden_leccion]
-    );
-    return result.rows[0];
-  },
+ createLeccion: async ({ nombre, etapa_id, orden_leccion }) => {
+  console.log("🔥 CREATE LECCION PAYLOAD:", {
+    nombre,
+    etapa_id,
+    orden_leccion,
+    typeOrden: typeof orden_leccion,
+  });
+
+  const result = await pool.query(
+    `
+    INSERT INTO lecciones (nombre, etapa_id, orden_leccion)
+    VALUES ($1, $2, $3)
+    RETURNING *;
+    `,
+    [nombre, etapa_id, orden_leccion]
+  );
+
+  console.log("✅ INSERT RESULT:", result.rows[0]);
+  return result.rows[0];
+},
 
   updateLeccion: async ({ nombre, orden_leccion, id }) => {
   const result = await pool.query(

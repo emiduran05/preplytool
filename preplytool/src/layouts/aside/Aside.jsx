@@ -112,7 +112,7 @@ export default function Aside({ onSelect }) {
     function openEditModal(type, item) {
         setSelectedItem({ ...item, type });
         setInputValue(item.name || "");
-        setOrdenLeccion(item.orden_leccion ?? "");
+        setOrdenLeccion(item.orden ?? "");
         setEditModalOpen(true);
     }
 
