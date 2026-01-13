@@ -13,7 +13,7 @@ const etapasModel = {
 
     updateEtapa: async(nivelData) => {
         const {nombre, id, orden_etapa} = nivelData;
-        const result = await pool.query('UPDATE etapas SET nombre = $1, orden_etapa = $2 WHERE id = $2 RETURNING *; ',
+        const result = await pool.query('UPDATE etapas SET nombre = $1, orden_etapa = $3 WHERE id = $2 RETURNING *; ',
             [nombre, id, orden_etapa]
         )
         return result.rows[0];

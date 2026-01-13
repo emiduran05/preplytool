@@ -39,21 +39,21 @@ export default function Aside({ onSelect }) {
 
     // ---------- CREATE REQUESTS ----------
     const postLevel = (nombre, orden) =>
-        fetch("/api/services/nivel/create", {
+        fetch("https://preplytool-2tgl.vercel.app/api/services/nivel/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ nombre, orden_nivel: orden }),
         });
 
     const postStage = (nombre, nivel_id, orden) =>
-        fetch("/api/services/etapa/create", {
+        fetch("https://preplytool-2tgl.vercel.app/api/services/etapa/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ nombre, nivel_id, orden_etapa: orden }),
         });
 
     const postLesson = (nombre, etapa_id, orden) =>
-        fetch("/api/services/leccion/create", {
+        fetch("https://preplytool-2tgl.vercel.app/api/services/leccion/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ nombre, etapa_id, orden_leccion: orden }),
@@ -66,7 +66,7 @@ export default function Aside({ onSelect }) {
         if (type === "etapa") body.orden_etapa = orden;
         if (type === "leccion") body.orden_leccion = orden;
 
-        return fetch(`/api/services/${type}/update`, {
+        return fetch(`https://preplytool-2tgl.vercel.app/api/services/${type}/update`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
@@ -75,7 +75,7 @@ export default function Aside({ onSelect }) {
 
     // ---------- DELETE ----------
     const postDelete = (type, id) =>
-        fetch(`/api/services/${type}/delete`, {
+        fetch(`https://preplytool-2tgl.vercel.app/api/services/${type}/delete`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id }),
