@@ -1,12 +1,19 @@
+
+
 // import pool from "../config/db.js";
 
 // export const getNivelesCompletosService = async (student_id) => {
-//     // Query principal que obtiene todas las lecciones y si el alumno las completó
 //     const result = await pool.query(`
 //         SELECT 
-//             n.id AS nivel_id, n.nombre AS nivel_nombre,
-//             e.id AS etapa_id, e.nombre AS etapa_nombre,
-//             l.id AS leccion_id, l.orden_leccion AS orden
+//             n.id AS nivel_id,
+//             n.nombre AS nivel_nombre,
+
+//             e.id AS etapa_id,
+//             e.nombre AS etapa_nombre,
+
+//             l.id AS leccion_id,
+//             l.nombre AS leccion_nombre,
+//             l.orden_leccion AS orden_leccion
 //         FROM niveles n
 //         LEFT JOIN etapas e ON e.nivel_id = n.id
 //         LEFT JOIN lecciones l ON l.etapa_id = e.id
@@ -14,13 +21,12 @@
 //             LOWER(n.nombre) ASC,
 //             LOWER(e.nombre) ASC,
 //             l.orden_leccion ASC;
-
 //     `);
 
 //     const rows = result.rows;
 //     const nivelesMap = {};
 
-//     // Mapear niveles, etapas y lecciones
+//     // ---------- MAPEO ----------
 //     rows.forEach(row => {
 //         if (!nivelesMap[row.nivel_id]) {
 //             nivelesMap[row.nivel_id] = {
@@ -47,43 +53,53 @@
 //         if (row.leccion_id) {
 //             etapa.lessons.push({
 //                 id: row.leccion_id,
-//                 name: row.leccion_nombre
+//                 name: row.leccion_nombre,
+//                 orden_leccion: row.orden_leccion
 //             });
 //         }
 //     });
 
-//     // 🔹 Calcular progreso usando la query que devuelve el porcentaje
+//     // ---------- PROGRESO ----------
 //     for (const nivel of Object.values(nivelesMap)) {
 //         for (const etapa of nivel.stages) {
-//             const progresoEtapaResult = await pool.query(`
+//             const progresoEtapaResult = await pool.query(
+//                 `
 //                 SELECT 
-//                     CASE WHEN COUNT(l.id) = 0 THEN 0
-//                          ELSE (COUNT(sl.student_id) * 100.0 / COUNT(l.id))
+//                     CASE 
+//                         WHEN COUNT(l.id) = 0 THEN 0
+//                         ELSE (COUNT(sl.student_id) * 100.0 / COUNT(l.id))
 //                     END AS progreso
 //                 FROM lecciones l
 //                 LEFT JOIN student_lessons sl 
-//                     ON l.id = sl.lesson_id AND sl.student_id = $1
+//                     ON l.id = sl.lesson_id 
+//                     AND sl.student_id = $1
 //                 WHERE l.etapa_id = $2;
-//             `, [student_id, etapa.id]);
+//                 `,
+//                 [student_id, etapa.id]
+//             );
 
-//             etapa.progreso = parseFloat(progresoEtapaResult.rows[0].progreso || 0);
+//             etapa.progreso = parseFloat(
+//                 progresoEtapaResult.rows[0]?.progreso || 0
+//             );
 //         }
 
-//         // Progreso del nivel como promedio de sus etapas
 //         if (nivel.stages.length > 0) {
 //             const suma = nivel.stages.reduce((acc, s) => acc + s.progreso, 0);
 //             nivel.progreso = Math.round(suma / nivel.stages.length);
 //         }
 //     }
 
-//     // 🔥 Ordenar dentro del JSON final
+//     // ---------- ORDEN FINAL ----------
 //     const nivelesOrdenados = Object.values(nivelesMap)
 //         .sort((a, b) => a.name.localeCompare(b.name));
 
 //     nivelesOrdenados.forEach(nivel => {
 //         nivel.stages.sort((a, b) => a.name.localeCompare(b.name));
+
 //         nivel.stages.forEach(etapa => {
-//             etapa.lessons.sort((a, b) => a.name.localeCompare(b.name));
+//             etapa.lessons.sort(
+//                 (a, b) => (a.orden_leccion ?? 0) - (b.orden_leccion ?? 0)
+//             );
 //         });
 //     });
 
@@ -98,19 +114,21 @@ export const getNivelesCompletosService = async (student_id) => {
         SELECT 
             n.id AS nivel_id,
             n.nombre AS nivel_nombre,
+            n.orden_nivel,
 
             e.id AS etapa_id,
             e.nombre AS etapa_nombre,
+            e.orden_etapa,
 
             l.id AS leccion_id,
             l.nombre AS leccion_nombre,
-            l.orden_leccion AS orden_leccion
+            l.orden_leccion
         FROM niveles n
         LEFT JOIN etapas e ON e.nivel_id = n.id
         LEFT JOIN lecciones l ON l.etapa_id = e.id
-        ORDER BY 
-            LOWER(n.nombre) ASC,
-            LOWER(e.nombre) ASC,
+        ORDER BY
+            n.orden_nivel ASC,
+            e.orden_etapa ASC,
             l.orden_leccion ASC;
     `);
 
@@ -123,6 +141,7 @@ export const getNivelesCompletosService = async (student_id) => {
             nivelesMap[row.nivel_id] = {
                 id: row.nivel_id,
                 name: row.nivel_nombre,
+                orden_nivel: row.orden_nivel,
                 stages: [],
                 progreso: 0
             };
@@ -130,11 +149,12 @@ export const getNivelesCompletosService = async (student_id) => {
 
         const nivel = nivelesMap[row.nivel_id];
 
-        let etapa = nivel.stages.find(s => s.id === row.etapa_id);
+        let etapa = nivel.stages.find(e => e.id === row.etapa_id);
         if (!etapa && row.etapa_id) {
             etapa = {
                 id: row.etapa_id,
                 name: row.etapa_nombre,
+                orden_etapa: row.orden_etapa,
                 lessons: [],
                 progreso: 0
             };
@@ -169,8 +189,8 @@ export const getNivelesCompletosService = async (student_id) => {
                 [student_id, etapa.id]
             );
 
-            etapa.progreso = parseFloat(
-                progresoEtapaResult.rows[0]?.progreso || 0
+            etapa.progreso = Number(
+                progresoEtapaResult.rows[0]?.progreso ?? 0
             );
         }
 
@@ -180,12 +200,15 @@ export const getNivelesCompletosService = async (student_id) => {
         }
     }
 
-    // ---------- ORDEN FINAL ----------
-    const nivelesOrdenados = Object.values(nivelesMap)
-        .sort((a, b) => a.name.localeCompare(b.name));
+    // ---------- ORDEN FINAL (SEGURIDAD EXTRA) ----------
+    const nivelesOrdenados = Object.values(nivelesMap).sort(
+        (a, b) => (a.orden_nivel ?? 0) - (b.orden_nivel ?? 0)
+    );
 
     nivelesOrdenados.forEach(nivel => {
-        nivel.stages.sort((a, b) => a.name.localeCompare(b.name));
+        nivel.stages.sort(
+            (a, b) => (a.orden_etapa ?? 0) - (b.orden_etapa ?? 0)
+        );
 
         nivel.stages.forEach(etapa => {
             etapa.lessons.sort(

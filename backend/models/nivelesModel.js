@@ -4,17 +4,17 @@ const nivelesModel = {
 
     createNivel: async(nivelData)=> {
 
-        const {nombre } = nivelData;
-        const result = await pool.query('INSERT INTO niveles (nombre) VALUES ($1) RETURNING *', 
-            [nombre]
+        const {nombre, orden_nivel } = nivelData;
+        const result = await pool.query('INSERT INTO niveles (nombre, orden_nivel) VALUES ($1, $2) RETURNING *', 
+            [nombre, orden_nivel]
         )
         return result.rows[0];
     },
 
     updateNivel: async(nivelData) => {
-        const {nombre, id} = nivelData;
-        const result = await pool.query('UPDATE niveles SET nombre = $1 WHERE id = $2 RETURNING *; ',
-            [nombre, id]
+        const {nombre, id, orden_nivel} = nivelData;
+        const result = await pool.query('UPDATE niveles SET nombre = $1, orden_nivel =$3 WHERE id = $2 RETURNING *; ',
+            [nombre, id, orden_nivel]
         )
         return result.rows[0];
 

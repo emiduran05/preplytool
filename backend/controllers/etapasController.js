@@ -4,13 +4,13 @@ const EtapasController = {
 
     createEtapas: async (req, res) => {
         try {
-            const { nombre, nivel_id } = req.body;
+            const { nombre, nivel_id, orden_etapa } = req.body;
 
             if (!nombre) {
                 return res.status(400).json({ error: "Falta el nombre del nivel" });
             }
 
-            const newEtapa = await etapasModel.createEtapa({ nombre, nivel_id });
+            const newEtapa = await etapasModel.createEtapa({ nombre, nivel_id, orden_etapa });
             res.status(201).json(newEtapa);
 
         } catch (error) {
@@ -21,10 +21,10 @@ const EtapasController = {
 
     updateEtapas: async (req, res) => {
         try {
-            const { nombre, id } = req.body;
+            const { nombre, id, orden_etapa } = req.body;
 
 
-            const updatedEtapa = await etapasModel.updateEtapa({ nombre, id })
+            const updatedEtapa = await etapasModel.updateEtapa({ nombre, id, orden_etapa })
 
             res.status(200).json(updatedEtapa);
         } catch (error) {

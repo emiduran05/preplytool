@@ -4,17 +4,17 @@ const etapasModel = {
 
     createEtapa: async(nivelData)=> {
 
-        const {nombre, nivel_id } = nivelData;
-        const result = await pool.query('INSERT INTO etapas (nombre, nivel_id) VALUES ($1, $2) RETURNING *;', 
-            [nombre, nivel_id]
+        const {nombre, nivel_id, orden_etapa } = nivelData;
+        const result = await pool.query('INSERT INTO etapas (nombre, nivel_id, orden_etapa) VALUES ($1, $2, $3) RETURNING *;', 
+            [nombre, nivel_id, orden_etapa]
         )
         return result.rows[0];
     },
 
     updateEtapa: async(nivelData) => {
-        const {nombre, id} = nivelData;
-        const result = await pool.query('UPDATE etapas SET nombre = $1 WHERE id = $2 RETURNING *; ',
-            [nombre, id]
+        const {nombre, id, orden_etapa} = nivelData;
+        const result = await pool.query('UPDATE etapas SET nombre = $1, orden_etapa = $2 WHERE id = $2 RETURNING *; ',
+            [nombre, id, orden_etapa]
         )
         return result.rows[0];
 

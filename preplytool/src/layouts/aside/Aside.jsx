@@ -7,104 +7,79 @@ export default function Aside({ onSelect }) {
     const [openLevel, setOpenLevel] = useState(null);
     const [openStage, setOpenStage] = useState(null);
 
-    // --- Creation Modal ---
+    // ---------- CREATE ----------
     const [modalOpen, setModalOpen] = useState(false);
     const [modalType, setModalType] = useState("");
     const [inputValue, setInputValue] = useState("");
     const [targetId, setTargetId] = useState(null);
+
+    const [ordenNivelCreate, setOrdenNivelCreate] = useState("");
+    const [ordenEtapaCreate, setOrdenEtapaCreate] = useState("");
     const [ordenLeccionCreate, setOrdenLeccionCreate] = useState("");
 
-    // --- Edit Modal ---
+    // ---------- EDIT ----------
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
+
+    const [ordenNivelEdit, setOrdenNivelEdit] = useState("");
+    const [ordenEtapaEdit, setOrdenEtapaEdit] = useState("");
     const [ordenLeccionEdit, setOrdenLeccionEdit] = useState("");
 
-    // --- Delete Modal ---
+    // ---------- DELETE ----------
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
     async function fetchLevelsData() {
-        try {
-            const res = await fetch(
-                "https://preplytool-2tgl.vercel.app/api/services/nivel/niveles/completos"
-            );
-            const data = await res.json();
-            setLevelsData(data);
-            setIsloading(false);
-        } catch (err) {
-            console.error("Error:", err);
-        }
+        const res = await fetch(
+            "https://preplytool-2tgl.vercel.app/api/services/nivel/niveles/completos"
+        );
+        const data = await res.json();
+        setLevelsData(data);
+        setIsloading(false);
     }
 
-    // ---------- CREATE ----------
-    async function postLevel(name) {
-        return fetch("https://preplytool-2tgl.vercel.app/api/services/nivel/create", {
+    // ---------- CREATE REQUESTS ----------
+    const postLevel = (nombre, orden) =>
+        fetch("/api/services/nivel/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre: name }),
+            body: JSON.stringify({ nombre, orden_nivel: orden }),
         });
-    }
 
-    async function postStage(name, nivelId) {
-        return fetch("https://preplytool-2tgl.vercel.app/api/services/etapa/create", {
+    const postStage = (nombre, nivel_id, orden) =>
+        fetch("/api/services/etapa/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre: name, nivel_id: nivelId }),
-        });
-    }
-
-    async function postLesson(name, etapaId, ordenLeccion) {
-        console.log("🟢 FRONT CREATE LECCION:", {
-            name,
-            etapaId,
-            ordenLeccion,
-            type: typeof ordenLeccion,
+            body: JSON.stringify({ nombre, nivel_id, orden_etapa: orden }),
         });
 
-        return fetch(
-            "https://preplytool-2tgl.vercel.app/api/services/leccion/create",
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    nombre: name,
-                    etapa_id: etapaId,
-                    orden_leccion: ordenLeccion,
-                }),
-            }
-        );
-    }
+    const postLesson = (nombre, etapa_id, orden) =>
+        fetch("/api/services/leccion/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nombre, etapa_id, orden_leccion: orden }),
+        });
 
-    // ---------- EDIT ----------
-    async function postEdit(type, id, name, ordenLeccion) {
-        const body = { id, nombre: name };
+    // ---------- EDIT REQUEST ----------
+    const postEdit = (type, id, nombre, orden) => {
+        const body = { id, nombre };
+        if (type === "nivel") body.orden_nivel = orden;
+        if (type === "etapa") body.orden_etapa = orden;
+        if (type === "leccion") body.orden_leccion = orden;
 
-        if (type === "leccion") {
-            body.orden_leccion = ordenLeccion;
-        }
-
-        console.log("🟢 FRONT UPDATE:", body);
-
-        return fetch(
-            `https://preplytool-2tgl.vercel.app/api/services/${type}/update`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            }
-        );
-    }
+        return fetch(`/api/services/${type}/update`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        });
+    };
 
     // ---------- DELETE ----------
-    async function postDelete(type, id) {
-        return fetch(
-            `https://preplytool-2tgl.vercel.app/api/services/${type}/delete`,
-            {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id }),
-            }
-        );
-    }
+    const postDelete = (type, id) =>
+        fetch(`/api/services/${type}/delete`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+        });
 
     useEffect(() => {
         fetchLevelsData();
@@ -115,6 +90,8 @@ export default function Aside({ onSelect }) {
         setModalType(type);
         setTargetId(id);
         setInputValue("");
+        setOrdenNivelCreate("");
+        setOrdenEtapaCreate("");
         setOrdenLeccionCreate("");
         setModalOpen(true);
     }
@@ -122,34 +99,23 @@ export default function Aside({ onSelect }) {
     function openEditModal(type, item) {
         setSelectedItem({ ...item, type });
         setInputValue(item.name || "");
-        setOrdenLeccionEdit(item.orden ?? "");
+        setOrdenNivelEdit(item.orden_nivel ?? "");
+        setOrdenEtapaEdit(item.orden_etapa ?? "");
+        setOrdenLeccionEdit(item.orden_leccion ?? "");
         setEditModalOpen(true);
-    }
-
-    function openDeleteModal(type, item) {
-        setSelectedItem({ ...item, type });
-        setDeleteModalOpen(true);
     }
 
     async function handleCreate(e) {
         e.preventDefault();
-        if (!inputValue.trim()) return;
 
-        if (modalType === "nivel") await postLevel(inputValue);
-        if (modalType === "etapa") await postStage(inputValue, targetId);
+        if (modalType === "nivel")
+            await postLevel(inputValue, Number(ordenNivelCreate));
 
-        if (modalType === "leccion") {
-            if (ordenLeccionCreate === "") {
-                alert("Debes indicar el orden de la lección");
-                return;
-            }
+        if (modalType === "etapa")
+            await postStage(inputValue, targetId, Number(ordenEtapaCreate));
 
-            await postLesson(
-                inputValue,
-                targetId,
-                Number(ordenLeccionCreate)
-            );
-        }
+        if (modalType === "leccion")
+            await postLesson(inputValue, targetId, Number(ordenLeccionCreate));
 
         setModalOpen(false);
         fetchLevelsData();
@@ -157,17 +123,15 @@ export default function Aside({ onSelect }) {
 
     async function handleEdit(e) {
         e.preventDefault();
-        if (!inputValue.trim()) return;
 
-        await postEdit(
-            selectedItem.type,
-            selectedItem.id,
-            inputValue,
-            selectedItem.type === "leccion"
-                ? Number(ordenLeccionEdit)
-                : undefined
-        );
+        const orden =
+            selectedItem.type === "nivel"
+                ? Number(ordenNivelEdit)
+                : selectedItem.type === "etapa"
+                ? Number(ordenEtapaEdit)
+                : Number(ordenLeccionEdit);
 
+        await postEdit(selectedItem.type, selectedItem.id, inputValue, orden);
         setEditModalOpen(false);
         fetchLevelsData();
     }
@@ -178,6 +142,7 @@ export default function Aside({ onSelect }) {
         fetchLevelsData();
     }
 
+    // ---------- RENDER ----------
     return (
         <div className="aside_container">
             {!isloading && openLevel === null && (
@@ -197,23 +162,27 @@ export default function Aside({ onSelect }) {
                                 }
                             >
                                 <span
-                                    className={`arrow ${openLevel === level.id ? "open" : ""}`}
+                                    className={`arrow ${
+                                        openLevel === level.id ? "open" : ""
+                                    }`}
                                 >
                                     <i className="fa-solid fa-caret-right"></i>
                                 </span>
                             </button>
 
-                            {level.name}
+                            {level.name} (#{level.orden_nivel})
 
                             <div>
                                 <i
                                     className="fa-solid fa-pencil edit"
                                     onClick={() => openEditModal("nivel", level)}
                                 ></i>
-
                                 <i
                                     className="fa-solid fa-trash delete"
-                                    onClick={() => openDeleteModal("nivel", level)}
+                                    onClick={() => {
+                                        setSelectedItem({ ...level, type: "nivel" });
+                                        setDeleteModalOpen(true);
+                                    }}
                                 ></i>
                             </div>
                         </div>
@@ -242,17 +211,24 @@ export default function Aside({ onSelect }) {
                                                 </span>
                                             </button>
 
-                                            {stage.name}
+                                            {stage.name} (#{stage.orden_etapa})
 
                                             <div>
                                                 <i
                                                     className="fa-solid fa-pencil edit"
-                                                    onClick={() => openEditModal("etapa", stage)}
+                                                    onClick={() =>
+                                                        openEditModal("etapa", stage)
+                                                    }
                                                 ></i>
-
                                                 <i
                                                     className="fa-solid fa-trash delete"
-                                                    onClick={() => openDeleteModal("etapa", stage)}
+                                                    onClick={() => {
+                                                        setSelectedItem({
+                                                            ...stage,
+                                                            type: "etapa",
+                                                        });
+                                                        setDeleteModalOpen(true);
+                                                    }}
                                                 ></i>
                                             </div>
                                         </div>
@@ -261,30 +237,36 @@ export default function Aside({ onSelect }) {
                                     {openStage === stage.id && (
                                         <div className="lesson_block">
                                             {stage.lessons.map((lesson) => (
-                                                <div key={lesson.id} className="row lesson_row">
+                                                <div
+                                                    key={lesson.id}
+                                                    className="row lesson_row"
+                                                >
                                                     <p
-                                                        style={{
-                                                            display: "inline-block",
-                                                            marginRight: "20px",
-                                                        }}
-                                                        onClick={() => onSelect(`${lesson.id}`)}
+                                                        onClick={() =>
+                                                            onSelect(`${lesson.id}`)
+                                                        }
                                                     >
-                                                        {lesson.name} (#{lesson.orden_leccion})
-                                                        <span style={{ marginLeft: "10px" }}>
-                                                            <i
-                                                                className="fa-solid fa-pencil edit"
-                                                                onClick={() =>
-                                                                    openEditModal("leccion", lesson)
-                                                                }
-                                                            ></i>
-                                                        </span>
+                                                        {lesson.name} (
+                                                        #{lesson.orden_leccion})
+                                                        <i
+                                                            className="fa-solid fa-pencil edit"
+                                                            style={{ marginLeft: "10px" }}
+                                                            onClick={() =>
+                                                                openEditModal(
+                                                                    "leccion",
+                                                                    lesson
+                                                                )
+                                                            }
+                                                        ></i>
                                                     </p>
                                                 </div>
                                             ))}
 
                                             <button
                                                 className="add_btn"
-                                                onClick={() => openModal("leccion", stage.id)}
+                                                onClick={() =>
+                                                    openModal("leccion", stage.id)
+                                                }
                                             >
                                                 + Agregar Lección
                                             </button>
@@ -317,6 +299,28 @@ export default function Aside({ onSelect }) {
                                 value={inputValue}
                                 onChange={(e) => setInputValue(e.target.value)}
                             />
+
+                            {modalType === "nivel" && (
+                                <input
+                                    type="number"
+                                    placeholder="Orden del nivel"
+                                    value={ordenNivelCreate}
+                                    onChange={(e) =>
+                                        setOrdenNivelCreate(e.target.value)
+                                    }
+                                />
+                            )}
+
+                            {modalType === "etapa" && (
+                                <input
+                                    type="number"
+                                    placeholder="Orden de la etapa"
+                                    value={ordenEtapaCreate}
+                                    onChange={(e) =>
+                                        setOrdenEtapaCreate(e.target.value)
+                                    }
+                                />
+                            )}
 
                             {modalType === "leccion" && (
                                 <input
@@ -359,6 +363,28 @@ export default function Aside({ onSelect }) {
                                 onChange={(e) => setInputValue(e.target.value)}
                             />
 
+                            {selectedItem.type === "nivel" && (
+                                <input
+                                    type="number"
+                                    value={ordenNivelEdit}
+                                    onChange={(e) =>
+                                        setOrdenNivelEdit(e.target.value)
+                                    }
+                                    placeholder="Orden del nivel"
+                                />
+                            )}
+
+                            {selectedItem.type === "etapa" && (
+                                <input
+                                    type="number"
+                                    value={ordenEtapaEdit}
+                                    onChange={(e) =>
+                                        setOrdenEtapaEdit(e.target.value)
+                                    }
+                                    placeholder="Orden de la etapa"
+                                />
+                            )}
+
                             {selectedItem.type === "leccion" && (
                                 <input
                                     type="number"
@@ -392,7 +418,10 @@ export default function Aside({ onSelect }) {
                 <div className="modal_overlay">
                     <div className="modal warning">
                         <h3>¿Eliminar {selectedItem.type}?</h3>
-                        <p>Se eliminará permanentemente y todos sus datos relacionados.</p>
+                        <p>
+                            Se eliminará permanentemente y todos sus datos
+                            relacionados.
+                        </p>
 
                         <div className="modal_actions cancel_button">
                             <button onClick={() => setDeleteModalOpen(false)}>

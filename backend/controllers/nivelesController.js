@@ -16,13 +16,13 @@ const nivelesController = {
 
     createNiveles: async (req, res) => {
         try {
-            const { nombre } = req.body;
+            const { nombre, orden_nivel } = req.body;
 
             if (!nombre) {
                 return res.status(400).json({ error: "Falta el nombre del nivel" });
             }
 
-            const newNivel = await nivelesModel.createNivel({ nombre });
+            const newNivel = await nivelesModel.createNivel({ nombre, orden_nivel });
             res.status(201).json(newNivel);
 
         } catch (error) {
@@ -33,10 +33,10 @@ const nivelesController = {
 
     updateNiveles: async (req, res) => {
         try {
-            const { nombre, id } = req.body;
+            const { nombre, id, orden_nivel } = req.body;
 
 
-            const updatedNivel = await nivelesModel.updateNivel({ nombre, id })
+            const updatedNivel = await nivelesModel.updateNivel({ nombre, id, orden_nivel })
 
             res.status(200).json(updatedNivel);
         } catch (error) {
