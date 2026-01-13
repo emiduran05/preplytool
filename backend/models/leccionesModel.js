@@ -16,7 +16,7 @@ const leccionesModel = {
     `
     UPDATE lecciones
     SET nombre = $1,
-        orden_leccion = $2
+        orden = $2
     WHERE id = $3
     RETURNING *;
     `,

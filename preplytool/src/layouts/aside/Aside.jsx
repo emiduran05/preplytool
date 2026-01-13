@@ -70,7 +70,7 @@ export default function Aside({ onSelect }) {
         const response = await fetch(
             `https://preplytool-2tgl.vercel.app/api/services/${type}/update`,
             {
-                method: "PUT",
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(body),
             }
