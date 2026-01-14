@@ -14,7 +14,8 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "https://preplytool.vercel.app",
-    "http://38.242.240.22:5173"
+    "http://38.242.240.22:5173",
+    "http://38.242.203.202",
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
