@@ -125,7 +125,7 @@ export default function Dashboard() {
     if (!confirmDelete) return;
 
     try {
-      await fetch("https://preplytool-2tgl.vercel.app/api/services/leccion/documento", {
+      await fetch("s://phttpreplytool-2tgl.vercel.app/api/services/leccion/documento", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
