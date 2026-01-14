@@ -240,33 +240,38 @@
 //   );
 // }
 
-
 import { useEffect, useRef, useState } from "react";
-import ReactQuill, { Quill } from "react-quill-new";
-import "react-quill-new/dist/quill.snow.css";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
-import ImageResize from "quill-image-resize-module-react";
-import QuillBetterTable from "quill-better-table";
 import "quill-better-table/dist/quill-better-table.css";
-
-// =====================
-// REGISTRO DE MÓDULOS (UNA SOLA VEZ)
-// =====================
-Quill.register(
-  {
-    "modules/imageResize": ImageResize,
-    "modules/better-table": QuillBetterTable,
-  },
-  true
-);
 
 export default function QuillEditor({ value = "", onSave }) {
   const quillRef = useRef(null);
-  const [internalValue, setInternalValue] = useState(value);
+  const [internalValue, setInternalValue] = useState(value || "");
 
   const [rows, setRows] = useState(2);
   const [cols, setCols] = useState(2);
   const [tableWidth, setTableWidth] = useState("100%");
+
+  // =====================
+  // REGISTRO DE MÓDULOS (UNA SOLA VEZ)
+  // =====================
+  useEffect(() => {
+    const Quill = require("quill");
+    const ImageResize = require("quill-image-resize-module-react").default;
+    const QuillBetterTable = require("quill-better-table");
+
+    if (!Quill.imports["modules/imageResize"]) {
+      Quill.register(
+        {
+          "modules/imageResize": ImageResize,
+          "modules/better-table": QuillBetterTable,
+        },
+        true
+      );
+    }
+  }, []);
 
   // =====================
   // SINCRONIZAR VALOR EXTERNO
@@ -279,7 +284,7 @@ export default function QuillEditor({ value = "", onSave }) {
   // APLICAR ESTILOS A TABLAS
   // =====================
   const applyTableStyles = () => {
-    const editor = quillRef.current?.getEditor?.();
+    const editor = quillRef.current?.getEditor();
     if (!editor) return;
 
     editor.root.querySelectorAll("table").forEach((table) => {
@@ -299,14 +304,8 @@ export default function QuillEditor({ value = "", onSave }) {
   // REAPLICAR ESTILOS AL EDITAR
   // =====================
   useEffect(() => {
-    if (!quillRef.current) return;
-
-    let editor;
-    try {
-      editor = quillRef.current.getEditor();
-    } catch {
-      return;
-    }
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return;
 
     applyTableStyles();
     editor.on("text-change", applyTableStyles);
@@ -320,7 +319,7 @@ export default function QuillEditor({ value = "", onSave }) {
   // INSERTAR TABLA
   // =====================
   const handleInsertTable = () => {
-    const editor = quillRef.current?.getEditor?.();
+    const editor = quillRef.current?.getEditor();
     if (!editor) return;
 
     const tableModule = editor.getModule("better-table");
@@ -345,7 +344,7 @@ export default function QuillEditor({ value = "", onSave }) {
   // ACCIONES SOBRE TABLAS
   // =====================
   const applyTableWidth = () => {
-    const editor = quillRef.current?.getEditor?.();
+    const editor = quillRef.current?.getEditor();
     if (!editor) return;
 
     editor.root.querySelectorAll("table").forEach((t) => {
@@ -355,7 +354,7 @@ export default function QuillEditor({ value = "", onSave }) {
   };
 
   const centerTables = () => {
-    const editor = quillRef.current?.getEditor?.();
+    const editor = quillRef.current?.getEditor();
     if (!editor) return;
 
     editor.root.querySelectorAll("table").forEach((t) => {
@@ -365,7 +364,7 @@ export default function QuillEditor({ value = "", onSave }) {
   };
 
   const toggleTableBorders = () => {
-    const editor = quillRef.current?.getEditor?.();
+    const editor = quillRef.current?.getEditor();
     if (!editor) return;
 
     editor.root.querySelectorAll("table").forEach((t) => {
@@ -382,7 +381,7 @@ export default function QuillEditor({ value = "", onSave }) {
     const url = prompt("URL de la imagen:");
     if (!url) return;
 
-    const editor = quillRef.current?.getEditor?.();
+    const editor = quillRef.current?.getEditor();
     if (!editor) return;
 
     const range = editor.getSelection(true);
@@ -393,7 +392,7 @@ export default function QuillEditor({ value = "", onSave }) {
   // GUARDAR HTML
   // =====================
   const handleSave = () => {
-    const editor = quillRef.current?.getEditor?.();
+    const editor = quillRef.current?.getEditor();
     if (!editor) return;
 
     onSave?.(editor.root.innerHTML);
@@ -413,7 +412,6 @@ export default function QuillEditor({ value = "", onSave }) {
       ["clean"],
     ],
     imageResize: {
-      parchment: Quill.import("parchment"),
       modules: ["Resize", "DisplaySize", "Toolbar"],
     },
     "better-table": {
