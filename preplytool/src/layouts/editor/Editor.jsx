@@ -2,61 +2,84 @@ import { useEffect, useRef, useState } from "react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 
-import Quill from "quill";
 import ImageResize from "quill-image-resize-module-react";
 import QuillBetterTable from "quill-better-table";
+import "quill-better-table/dist/quill-better-table.css";
 
-// =====================
-// REGISTROS
-// =====================
-Quill.register(
-  {
-    "modules/imageResize": ImageResize,
-    "modules/better-table": QuillBetterTable,
-  },
-  true
-);
+/**
+ * =====================
+ * REGISTRO SEGURO DE MÓDULOS
+ * =====================
+ */
+let quillModulesRegistered = false;
+
+function registerQuillModules() {
+  if (quillModulesRegistered) return;
+
+  const Quill = ReactQuill.Quill;
+  if (!Quill) return;
+
+  Quill.register(
+    {
+      "modules/imageResize": ImageResize,
+      "modules/better-table": QuillBetterTable,
+    },
+    true
+  );
+
+  quillModulesRegistered = true;
+}
 
 export default function QuillEditor({ value = "", onSave }) {
   const quillRef = useRef(null);
-  const [internalValue, setInternalValue] = useState(value || "");
 
+  const [internalValue, setInternalValue] = useState(value || "");
   const [rows, setRows] = useState(2);
   const [cols, setCols] = useState(2);
   const [tableWidth, setTableWidth] = useState("100%");
 
-  // =====================
-  // CARGA INICIAL HTML
-  // =====================
+  /**
+   * =====================
+   * REGISTRAR MÓDULOS (1 VEZ)
+   * =====================
+   */
+  useEffect(() => {
+    registerQuillModules();
+  }, []);
+
+  /**
+   * =====================
+   * SINCRONIZAR HTML EXTERNO
+   * =====================
+   */
   useEffect(() => {
     if (!quillRef.current) return;
+
     const editor = quillRef.current.getEditor();
     editor.root.innerHTML = value || "";
     setInternalValue(value || "");
   }, [value]);
 
-  // =====================
-  // APLICAR ESTILOS TABLAS
-  // =====================
+  /**
+   * =====================
+   * ESTILOS DE TABLAS
+   * =====================
+   */
   const applyTableStyles = () => {
     const editor = quillRef.current?.getEditor();
     if (!editor) return;
 
     editor.root.querySelectorAll("table").forEach((table) => {
-      const width = table.dataset.width;
-      const centered = table.dataset.centered;
-      const borders = table.dataset.borders;
+      const { width, centered, borders } = table.dataset;
 
       if (width) table.style.width = width;
       if (centered === "true") table.style.margin = "0 auto";
+
       if (borders === "false") table.classList.add("no-borders");
       else table.classList.remove("no-borders");
     });
   };
 
-  // =====================
-  // REAPLICAR AL CAMBIAR
-  // =====================
   useEffect(() => {
     if (!quillRef.current) return;
 
@@ -67,12 +90,19 @@ export default function QuillEditor({ value = "", onSave }) {
     return () => editor.off("text-change", applyTableStyles);
   }, []);
 
-  // =====================
-  // INSERTAR TABLA
-  // =====================
+  /**
+   * =====================
+   * TABLAS
+   * =====================
+   */
   const handleInsertTable = () => {
-    const editor = quillRef.current.getEditor();
-    editor.getModule("better-table").insertTable(rows, cols);
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return;
+
+    const tableModule = editor.getModule("better-table");
+    if (!tableModule) return;
+
+    tableModule.insertTable(rows, cols);
 
     setTimeout(() => {
       const tables = editor.root.querySelectorAll("table");
@@ -87,11 +117,10 @@ export default function QuillEditor({ value = "", onSave }) {
     }, 0);
   };
 
-  // =====================
-  // ACCIONES TABLA
-  // =====================
   const applyTableWidth = () => {
-    const editor = quillRef.current.getEditor();
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return;
+
     editor.root.querySelectorAll("table").forEach((t) => {
       t.dataset.width = tableWidth;
       t.style.width = tableWidth;
@@ -99,7 +128,9 @@ export default function QuillEditor({ value = "", onSave }) {
   };
 
   const centerTables = () => {
-    const editor = quillRef.current.getEditor();
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return;
+
     editor.root.querySelectorAll("table").forEach((t) => {
       t.dataset.centered = "true";
       t.style.margin = "0 auto";
@@ -107,37 +138,49 @@ export default function QuillEditor({ value = "", onSave }) {
   };
 
   const toggleTableBorders = () => {
-    const editor = quillRef.current.getEditor();
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return;
+
     editor.root.querySelectorAll("table").forEach((t) => {
       const enabled = t.dataset.borders !== "false";
       t.dataset.borders = (!enabled).toString();
-      t.classList.toggle("no-borders");
+      t.classList.toggle("no-borders", enabled);
     });
   };
 
-  // =====================
-  // INSERTAR IMAGEN
-  // =====================
+  /**
+   * =====================
+   * IMÁGENES
+   * =====================
+   */
   const handleInsertImage = () => {
     const url = prompt("URL de la imagen:");
     if (!url) return;
 
-    const editor = quillRef.current.getEditor();
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return;
+
     const range = editor.getSelection(true);
     editor.insertEmbed(range.index, "image", url);
   };
 
-  // =====================
-  // GUARDAR HTML
-  // =====================
+  /**
+   * =====================
+   * GUARDAR HTML
+   * =====================
+   */
   const handleSave = () => {
-    const editor = quillRef.current.getEditor();
-    onSave(editor.root.innerHTML); // <-- HTML en lugar de Delta
+    const editor = quillRef.current?.getEditor();
+    if (!editor) return;
+
+    onSave(editor.root.innerHTML);
   };
 
-  // =====================
-  // CONFIG QUILL
-  // =====================
+  /**
+   * =====================
+   * CONFIG QUILL
+   * =====================
+   */
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, false] }],
@@ -149,7 +192,6 @@ export default function QuillEditor({ value = "", onSave }) {
       ["clean"],
     ],
     imageResize: {
-      parchment: Quill.import("parchment"),
       modules: ["Resize", "DisplaySize", "Toolbar"],
     },
     "better-table": {
@@ -172,7 +214,7 @@ export default function QuillEditor({ value = "", onSave }) {
             type="number"
             min={1}
             value={rows}
-            onChange={(e) => setRows(Number(e.target.value))}
+            onChange={(e) => setRows(+e.target.value)}
             style={{ width: 50, marginLeft: 5 }}
           />
         </label>
@@ -183,7 +225,7 @@ export default function QuillEditor({ value = "", onSave }) {
             type="number"
             min={1}
             value={cols}
-            onChange={(e) => setCols(Number(e.target.value))}
+            onChange={(e) => setCols(+e.target.value)}
             style={{ width: 50, marginLeft: 5 }}
           />
         </label>
@@ -239,6 +281,7 @@ export default function QuillEditor({ value = "", onSave }) {
     </div>
   );
 }
+
 
 // import { useEffect, useRef, useState } from "react";
 // import ReactQuill from "react-quill";
